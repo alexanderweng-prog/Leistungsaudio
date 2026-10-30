@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Leistung – Lern-App (Prototyp)</title>
+<style>
+:root{
+  --font-display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
+  --font-body:'Nunito','Segoe UI',system-ui,Helvetica,Arial,sans-serif;
+  --font-mono:'JetBrains Mono',SFMono-Regular,Menlo,monospace;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
+  --r:14px;
+  --pop-yellow:#fed835;--pop-pink:#fb55b1;--pop-cyan:#36dcec;--pop-green:#49de78;--ink:#161332;
+  --bg:#f3f4ff;--surface:#fdfdff;--subtle:#e6e7ff;--text:#181535;--muted:#4a486d;
+  --line:#1f174a;--line-soft:#babadd;--primary:#6442e4;--on-primary:#fbfbff;
+  --accent-text:#502cbe;--accent-bg:#e3e4ff;
+  --good:#005928;--good-bg:#c1f7d2;--bad:#a90017;--bad-bg:#ffdfda;--warn:#784000;--warn-bg:#ffeea0;
+  --header-bg:#2f127b;--header-text:#fbfbff;--header-muted:#ccccf8;--header-line:#6358ba;
+  --bar-track:#d4d4f5;--bar-fill:#745af4;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#120e2d;--surface:#1f1a43;--subtle:#181439;--text:#f4f4fd;--muted:#c0c0e4;
+    --line:#9d99ed;--line-soft:#3e3a70;--primary:#a89fff;--on-primary:#141030;
+    --accent-text:#c9c6ff;--accent-bg:#2d2560;
+    --good:#5eee9c;--good-bg:#00361a;--bad:#ffa59c;--bad-bg:#4f1a18;--warn:#f6da6f;--warn-bg:#3e2e00;
+    --header-bg:#0a0427;--bar-track:#373267;--bar-fill:#aea5ff;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#120e2d;--surface:#1f1a43;--subtle:#181439;--text:#f4f4fd;--muted:#c0c0e4;
+  --line:#9d99ed;--line-soft:#3e3a70;--primary:#a89fff;--on-primary:#141030;
+  --accent-text:#c9c6ff;--accent-bg:#2d2560;
+  --good:#5eee9c;--good-bg:#00361a;--bad:#ffa59c;--bad-bg:#4f1a18;--warn:#f6da6f;--warn-bg:#3e2e00;
+  --header-bg:#0a0427;--bar-track:#373267;--bar-fill:#aea5ff;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-weight:500;font-size:1.0625rem;line-height:1.45;min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--header-bg)}
+h1,h2,h3,p{margin:0}
+.mono{font-family:var(--font-mono)}.b{font-weight:800}
+.small{font-size:.875rem;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.wrap{max-width:720px;margin:0 auto;padding:var(--s5) var(--s4) var(--s7)}
+.tag{font-size:.8rem;font-weight:800;color:var(--accent-text)}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+[hidden]{display:none!important}
+
+.top{position:relative;overflow:hidden;background:radial-gradient(circle at 88% 18%,rgba(165,0,145,.55),transparent 42%),radial-gradient(circle at 6% 92%,rgba(0,131,199,.5),transparent 46%),var(--header-bg);color:var(--header-text);padding:var(--s5) var(--s4);border-bottom:4px solid var(--line)}
+.top>*{position:relative;max-width:688px;margin-left:auto;margin-right:auto}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:var(--s4)}
+.top h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.9rem,8vw,3rem);line-height:1.02;text-shadow:0 3px 0 #150640;overflow-wrap:anywhere}
+.lead{color:var(--header-muted);margin-top:var(--s2)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin-top:var(--s5)}
+.stat{border:3px solid var(--header-line);border-radius:14px;background:rgba(255,255,255,.08);padding:var(--s3);display:flex;flex-direction:column;min-width:0}
+.stat .k{font-size:.75rem;font-weight:800;color:var(--header-muted)}
+.stat .v{font-family:var(--font-display);font-weight:600;font-size:1.125rem}
+.chip{display:inline-block;margin-top:var(--s3);padding:2px 12px;border-radius:999px;background:var(--pop-pink);color:var(--ink);border:3px solid var(--line);font-weight:800;font-size:.85rem}
+
+.card{background:var(--surface);border:3px solid var(--line);border-radius:var(--r);box-shadow:0 5px 0 var(--line);padding:var(--s4)}
+.path{display:flex;flex-direction:column;gap:var(--s4);margin-top:var(--s4)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+.chap{display:grid;grid-template-columns:50px 1fr;gap:var(--s3);align-items:start;border-top:12px solid var(--sc,var(--primary))}
+.chap.locked{border-style:dashed;box-shadow:none;background:var(--subtle);opacity:.8}
+.num{width:50px;height:50px;border-radius:14px;background:var(--sc,var(--primary));color:var(--ink);border:3px solid var(--line);box-shadow:0 3px 0 var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:1.6rem}
+.chap h3,.lh,.sumh{font-family:var(--font-display);font-weight:600;font-size:1.375rem;line-height:1.2}
+.sub{color:var(--accent-text);font-weight:700;font-size:.9rem}
+.acts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+
+.btn{appearance:none;min-height:52px;padding:0 var(--s4);border:3px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font:800 1rem/1.1 var(--font-body);cursor:pointer;box-shadow:0 4px 0 var(--line);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn.sm{min-height:40px;padding:0 var(--s3);font-size:.875rem;box-shadow:0 3px 0 var(--line)}
+.btn.block{display:block;width:100%;margin-top:var(--s3)}
+.btn:disabled{opacity:.4;box-shadow:none;transform:none;cursor:default}
+.btn.on{background:var(--primary);color:var(--on-primary)}
+.seg3{display:flex;flex-wrap:wrap;gap:var(--s2);margin:var(--s3) 0}
+.seg3 .btn{flex:1;min-width:90px}
+
+.bar{height:14px;border:3px solid var(--line);border-radius:8px;background:var(--bar-track);overflow:hidden;margin:var(--s3) 0}
+.bar>div{height:100%;background:var(--pop-yellow);transition:width .5s}
+.qcard{border-top:12px solid var(--sc,var(--primary));margin-top:var(--s4)}
+.q{font-weight:800;font-size:1.25rem;line-height:1.3;margin:var(--s2) 0 var(--s4)}
+.lbody p{margin:0 0 var(--s3)}
+.opts{display:flex;flex-direction:column;gap:var(--s3)}
+.opt{appearance:none;display:flex;gap:var(--s3);align-items:flex-start;text-align:left;width:100%;min-height:56px;padding:var(--s3) var(--s4);border:3px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font:600 1rem/1.35 var(--font-body);cursor:pointer;box-shadow:0 4px 0 var(--line-soft)}
+.opt .ltr{flex:none;width:30px;height:30px;border-radius:50%;background:var(--sc,var(--primary));color:var(--ink);border:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem}
+.opt:disabled{cursor:default;opacity:.75}
+.opt.good{opacity:1;background:var(--good-bg);border-color:var(--good);color:var(--good)}
+.opt.bad{opacity:1;background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.ansrow{display:flex;gap:var(--s3);align-items:stretch}
+.numin{flex:1;min-width:0;min-height:60px;padding:0 var(--s4);border:3px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font:800 1.5rem var(--font-mono)}
+.unitl{display:flex;align-items:center;min-width:3em;font-size:1.25rem;font-weight:800;color:var(--accent-text)}
+.fb{margin-top:var(--s4);border:3px solid;border-radius:14px;padding:var(--s4)}
+.fb .fbt{font-weight:800;margin-bottom:var(--s1)}
+.fb.good{background:var(--good-bg);border-color:var(--good);color:var(--good)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.fb.warn{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.fb .fbb{color:var(--text);font-size:.95rem}
+.fb .btn{margin-top:var(--s3)}
+.merk{display:flex;gap:var(--s3);border:3px solid var(--primary);background:var(--accent-bg);border-radius:14px;padding:var(--s3);margin:var(--s3) 0}
+.mk{flex:none;width:28px;height:28px;border-radius:50%;background:var(--pop-yellow);color:var(--ink);border:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem}
+.worked{border:3px solid var(--line);border-radius:14px;background:var(--subtle);padding:var(--s3);margin:var(--s3) 0}
+.wsteps{list-style:none;margin:var(--s2) 0 var(--s3);padding:0}
+.wsteps li{padding:10px 0;border-top:2px dashed var(--line-soft)}
+.wsteps li.hid{display:none}
+.wt{font-weight:800}.wm{font-family:var(--font-mono);font-size:.9rem}
+.audio{margin-top:var(--s4);border-top:2px dashed var(--line-soft);padding-top:var(--s3)}
+.audio .tag{display:block;margin-bottom:var(--s1)}
+.script{margin:var(--s3) 0 0;padding:0;list-style:none;font-size:.9rem}
+.script li{padding:6px 10px;border-radius:10px;margin:4px 0;background:var(--subtle)}
+.script li.f{background:var(--accent-bg)}
+.script b{font-size:.78rem;color:var(--accent-text)}
+.sim{border:3px solid var(--line-soft);border-radius:14px;padding:var(--s3);background:var(--subtle)}
+.sl{display:block;margin-top:var(--s3)}
+.sll{display:block;font-weight:700;font-size:.875rem}
+input[type=range]{width:100%;height:36px;margin:0;accent-color:var(--primary)}
+.sw{font:800 2.6rem var(--font-mono);text-align:center;margin:var(--s3) 0}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin-top:var(--s3)}
+.trio>div{background:var(--surface);border:3px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;min-width:0}
+.trio .k{font-size:.72rem;font-weight:800;color:var(--muted)}
+.readout{font-size:.9rem;background:var(--surface);border:3px solid var(--line-soft);border-radius:14px;padding:var(--s3);margin-top:var(--s3)}
+.dots{display:flex;gap:6px;margin:var(--s3) 0}
+.dot{flex:1;height:10px;border-radius:5px;background:var(--bar-track)}.dot.on{background:var(--sc,var(--bar-fill))}
+.navrow{display:grid;grid-template-columns:1fr 2fr;gap:var(--s3);margin-top:var(--s4)}
+.tags{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center}
+.review{background:var(--accent-bg)}
+.note{border-left:6px solid var(--pop-pink);padding-left:var(--s3);margin-top:var(--s3)}
+.codebox{font-family:var(--font-mono);font-size:.75rem;word-break:break-all;border:3px dashed var(--line);border-radius:14px;padding:var(--s3);margin-top:var(--s3);user-select:all}
+.xppop{float:right;background:var(--pop-yellow);color:var(--ink);border:3px solid var(--line);border-radius:999px;padding:0 12px;font-family:var(--font-display);font-weight:700}
+
+.watti{--w:64px;position:relative;width:var(--w);display:flex;flex-direction:column;align-items:center;animation:idle 3.4s ease-in-out infinite}
+.watti.mini{--w:46px;position:absolute;right:16px;top:calc(var(--w)*-1.5)}
+.watti .cap{width:calc(var(--w)*.34);height:calc(var(--w)*.11);background:var(--line);border-radius:4px 4px 0 0}
+.watti .body{position:relative;width:var(--w);height:calc(var(--w)*1.3);border:3px solid var(--line);border-radius:calc(var(--w)*.26);background:#f3f4ff;overflow:hidden;box-shadow:0 4px 0 var(--line)}
+.watti .fill{position:absolute;left:0;right:0;bottom:0;height:var(--lvl);background:var(--pop-yellow);transition:height 1s}
+.watti .face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--w)*.1)}
+.watti .eyes{display:flex;gap:calc(var(--w)*.2)}
+.watti .eye{display:block;width:calc(var(--w)*.13);height:calc(var(--w)*.19);background:var(--ink);border-radius:50%}
+.watti .mouth{display:block;width:calc(var(--w)*.3);height:calc(var(--w)*.14);border:3px solid var(--ink);border-top:none;border-radius:0 0 calc(var(--w)*.3) calc(var(--w)*.3)}
+.watti[data-mood=cheer] .mouth{height:calc(var(--w)*.2);background:var(--ink)}
+.watti[data-mood=sad] .mouth{border:3px solid var(--ink);border-bottom:none;border-radius:calc(var(--w)*.3) calc(var(--w)*.3) 0 0}
+.watti[data-mood=think] .mouth{border:0;border-bottom:3px solid var(--ink);border-radius:0;height:0;width:calc(var(--w)*.2)}
+.watti.talk{animation:hop .5s ease-in-out infinite}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmt=(n,d)=>Number(n).toLocaleString('de-CH',{maximumFractionDigits:d===undefined?1:d});
+const IS_T=()=>location.hash==='#lehrer';
+
+/* ---------- Stimmen (Plazma gemini-tts) ---------- */
+const VOICES={w:'de-de-tutor-9',m:'de-de-tutor-6',f:'de-de-tutor-3'};
+const CLIPS={}; // id -> {voice, text}
+function reg(id,voice,text){CLIPS[id]={voice:VOICES[voice],text};return id;}
+
+/* ---------- Lerninhalt Kapitel 1 ---------- */
+const merk=h=>'<div class="merk"><span class="mk" aria-hidden="true">★</span><div>'+h+'</div></div>';
+const CARDS=[
+ {type:'predict',h:'Wer leistet mehr?',
+  q:'Anna und Ben tragen je eine 20-kg-Kiste im Treppenhaus 4 m hoch. Anna braucht 20 s, Ben nur 10 s. Was denkst du?',
+  opts:['Ben verrichtet doppelt so viel Arbeit.','Beide verrichten gleich viel Arbeit, aber Ben ist leistungsstärker.','Anna verrichtet mehr Arbeit, weil sie länger arbeitet.','Beide haben dieselbe Leistung.'],ok:1,
+  expl:'Gleiche Kiste, gleiche Höhe: Die Arbeit ist gleich. Ben schafft sie in der halben Zeit. Darum ist seine Leistung doppelt so gross. Genau das lernst du jetzt zu berechnen.',
+  w:'Bevor wir rechnen: Tipp einfach, was du glaubst. Anna und Ben tragen dieselbe Kiste dieselbe Treppe hoch. Ben ist doppelt so schnell. Wer verrichtet mehr Arbeit? Und wer hat die grössere Leistung? Wähle eine Antwort, dann sehen wir weiter.',
+  p:[['m','Zwei Personen, eine Kiste, ein Treppenhaus. Anna braucht zwanzig Sekunden, Ben zehn.'],['f','Und meine Frage ist: Hat Ben jetzt mehr gearbeitet, oder ist er nur schneller?'],['m','Genau diese Unterscheidung ist der Kern des Kapitels. Tipp zuerst, bevor du weiterliest.']]},
+ {type:'text',h:'Arbeit: Kraft mal Weg',
+  body:'<p>Physikalische Arbeit wird nur verrichtet, wenn eine <b>Kraft entlang eines Wegs</b> wirkt.</p>'+merk('<b>W = F · s</b><br>Einheit: Joule (J). 1 J = 1 N · 1 m.')+'<p>Beim Tragen einer Kiste nach oben ist die Kraft so gross wie die Gewichtskraft: <b>F = m · 10 N/kg</b>.</p>',
+  w:'Arbeit heisst in der Physik: Eine Kraft wirkt entlang eines Wegs. Die Formel ist W gleich F mal s, und die Einheit ist Joule. Wenn du eine Kiste hochträgst, ist die Kraft ihre Gewichtskraft: Masse mal zehn Newton pro Kilogramm.',
+  p:[['f','Also Arbeit ist Kraft mal Weg. Klingt einfach.'],['m','Ist es auch, solange die Kraft in Richtung des Wegs zeigt. Wer eine Kiste waagrecht trägt, verrichtet an ihr keine Arbeit.'],['f','Und bei der Treppe zählt die Höhe, die man hochkommt.'],['m','Genau. Kraft ist die Gewichtskraft, Weg ist die Höhe.']]},
+ {type:'worked',h:'Vorgerechnet: Annas Kiste',
+  given:'Anna trägt eine Kiste mit 20 kg um 4 m nach oben. Wie gross ist die Arbeit?',
+  steps:[['Gewichtskraft','F = 20 kg · 10 N/kg = 200 N'],['Arbeit','W = 200 N · 4 m = 800 J'],['Antwort','Anna verrichtet 800 J. Ben auch, denn Kiste und Höhe sind gleich.']],
+  w:'Rechnen wir gemeinsam. Zuerst die Gewichtskraft: zwanzig Kilogramm mal zehn ist zweihundert Newton. Dann die Arbeit: zweihundert Newton mal vier Meter sind achthundert Joule. Tippe auf Nächster Schritt, wenn du bereit bist.',
+  p:[['m','Schritt eins: Gewichtskraft. Zwanzig Kilo mal zehn Newton pro Kilo, das sind zweihundert Newton.'],['f','Schritt zwei: Kraft mal Weg. Zweihundert mal vier ergibt achthundert Joule.'],['m','Und das gilt für Anna und Ben gleichermassen.']]},
+ {type:'text',h:'Leistung: Arbeit pro Zeit',
+  body:merk('<b>P = W : t</b><br>Einheit: Watt (W). 1 W = 1 J pro 1 s.')+'<p>Anna: 800 J in 20 s, also <b>40 W</b>.<br>Ben: 800 J in 10 s, also <b>80 W</b>.</p><p>Watt ist schon „pro Sekunde“. Man sagt nie „Watt pro Stunde“.</p>',
+  w:'Die Leistung sagt dir, wie schnell Arbeit verrichtet wird. P gleich W durch t. Anna schafft achthundert Joule in zwanzig Sekunden, das sind vierzig Watt. Ben schafft dieselbe Arbeit in zehn Sekunden: achtzig Watt. Doppelt so schnell heisst doppelte Leistung.',
+  p:[['f','Dann hat Ben also vierzig Watt mehr als Anna?'],['m','Ja, achtzig statt vierzig. Dieselbe Arbeit, halbe Zeit, doppelte Leistung.'],['f','Und Watt bedeutet schon pro Sekunde, richtig?'],['m','Richtig. Ein Watt ist ein Joule pro Sekunde.']]},
+ {type:'sprint',h:'Mitmachen: Treppensprint',
+  w:'Jetzt bist du dran. Zuerst schätzt du deine Leistung. Dann stellst du deine Masse ein und die Anzahl Stufen. Starte die Stoppuhr, wenn du losrennst, und stoppe oben. Ich rechne dir deine Leistung aus.',
+  p:[['f','Ich schätze, mein Sprint liegt bei etwa dreihundert Watt.'],['m','Dann prüfen wir das. Schätzen, messen, vergleichen: so arbeitet die Physik.'],['f','Aber Achtung, Sicherheit zuerst. Nicht rennen, wenn die Treppe nass ist.']]}
+];
+const FB_OK=[reg('fb-ok-1','w','Richtig, super gemacht!'),reg('fb-ok-2','w','Genau so! Das sitzt.'),reg('fb-ok-3','w','Stark, weiter so!')];
+const FB_BAD=[reg('fb-bad-1','w','Nicht ganz. Schau dir den Tipp an, dann klappt es.'),reg('fb-bad-2','w','Knapp daneben. Das kommt gleich nochmals.')];
+
+/* ---------- Aufgaben mit drei unsichtbaren Stufen ---------- */
+const TIPPS={
+ 'w-fs':'Arbeit ist Kraft mal Weg. Beide Werte stehen in der Aufgabe.',
+ 'p-wt':'Leistung ist Arbeit durch Zeit. Achte auf die Einheit Watt.',
+ 'einheit':'Denk an die Formel P gleich W durch t. Welche Einheit ist Joule pro Sekunde?',
+ 'w-m':'Rechne zuerst die Gewichtskraft aus: Masse mal zehn. Dann Kraft mal Höhe.',
+ 'p-gleich':'Leistung ist Arbeit durch Zeit. Die Arbeit bleibt gleich. Was passiert mit dem Ergebnis, wenn die Zeit grösser wird?',
+ 'w-pt':'Arbeit ist Leistung mal Zeit. Rechne die Zeit zuerst in Sekunden um.',
+ 'p-treppe':'Zuerst Gewichtskraft, dann Arbeit, dann Leistung. Drei kleine Schritte.',
+ 'e-kwh':'Energie ist Leistung mal Zeit. Minuten zuerst in Sekunden umrechnen, am Schluss in Kilojoule.',
+ 't-rueck':'Stelle die Formel um: Zeit ist Arbeit durch Leistung. Die Arbeit kennst du aus Masse und Höhe.',
+ 'sprint-mc':'Überlege: Was ändert sich beim Sprint, die Arbeit oder die Zeit?'
+};
+Object.keys(TIPPS).forEach(k=>reg('tipp-'+k,'w',TIPPS[k]));
+const num=(topic,lvl,q,unit,ans,expl,tol)=>({kind:'num',topic,lvl,q,unit,ans,expl,tol:tol||0.015});
+const mc=(topic,lvl,q,opts,expl)=>({kind:'mc',topic,lvl,q,opts,expl});
+const GEN={
+ 1:[
+  ()=>{const F=rnd([20,50,100,200]),s=rnd([2,3,5,10]);return num('w-fs',1,'Eine Kraft von '+F+' N wirkt entlang eines Wegs von '+s+' m. Wie gross ist die Arbeit?','J',F*s,'W = F · s = '+F+' N · '+s+' m = '+F*s+' J');},
+  ()=>{const p=rnd([[600,10],[600,20],[1200,10],[1200,30],[2400,20],[3000,60]]);return num('p-wt',1,'Eine Arbeit von '+p[0]+' J wird in '+p[1]+' s verrichtet. Wie gross ist die Leistung?','W',p[0]/p[1],'P = W : t = '+p[0]+' J : '+p[1]+' s = '+fmt(p[0]/p[1])+' W');},
+  ()=>mc('einheit',1,'In welcher Einheit misst man die Leistung?',['Watt (W)','Joule (J)','Newton (N)','Sekunde (s)'],'Leistung = Arbeit pro Zeit, gemessen in Watt. 1 W = 1 J pro s.')
+ ],
+ 2:[
+  ()=>{const m=rnd([5,12,20,60]),h=rnd([2,3,4,5]);return num('w-m',2,'Du trägst eine Kiste mit '+m+' kg um '+h+' m nach oben (g = 10 N/kg). Wie gross ist die Arbeit?','J',m*10*h,'F = '+m+' kg · 10 N/kg = '+m*10+' N, W = '+m*10+' N · '+h+' m = '+m*10*h+' J');},
+  ()=>{const p=rnd([[1500,12],[2400,16],[900,20],[3600,18]]);return num('p-wt',2,'Eine Maschine verrichtet '+p[0]+' J Arbeit in '+p[1]+' s. Welche Leistung hat sie?','W',p[0]/p[1],'P = W : t = '+p[0]+' J : '+p[1]+' s = '+fmt(p[0]/p[1])+' W');},
+  ()=>{const P=rnd([40,60,100]),t=rnd([2,3,5]);return num('w-pt',2,'Ein Gerät mit '+P+' W läuft '+t+' Minuten. Wie gross ist die verrichtete Arbeit?','J',P*t*60,'t = '+t+' min = '+t*60+' s, W = P · t = '+P+' W · '+t*60+' s = '+fmt(P*t*60,0)+' J');},
+  ()=>mc('p-gleich',2,'Du steigst dieselbe Treppe hoch, aber doppelt so langsam. Was gilt?',['Gleiche Arbeit, halbe Leistung.','Doppelte Arbeit, gleiche Leistung.','Gleiche Arbeit, gleiche Leistung.','Halbe Arbeit, halbe Leistung.'],'Masse und Höhe sind gleich, also ist die Arbeit gleich. Die Zeit ist doppelt so gross, darum ist die Leistung nur halb so gross.')
+ ],
+ 3:[
+  ()=>{const m=rnd([45,60,75]),h=rnd([3,4,6]),t=rnd([6,8,10,12]),P=m*10*h/t;return num('p-treppe',3,'Eine Person ('+m+' kg) steigt in '+t+' s eine Treppe mit '+h+' m Höhenunterschied hinauf (g = 10 N/kg). Welche Leistung bringt sie auf?','W',P,'F = '+m*10+' N, W = '+m*10*h+' J, P = '+m*10*h+' J : '+t+' s = '+fmt(P)+' W',0.02);},
+  ()=>{const P=rnd([1000,1500,2000]),t=rnd([3,4,5]);return num('e-kwh',3,'Ein Wasserkocher mit '+P+' W läuft '+t+' Minuten. Wie viel Energie wandelt er um? Antwort in Kilojoule (kJ).','kJ',P*t*60/1000,'W = '+P+' W · '+t*60+' s = '+fmt(P*t*60,0)+' J = '+fmt(P*t*60/1000)+' kJ');},
+  ()=>{const m=rnd([50,70]),h=rnd([4,5]),P=rnd([250,350,500]),t=m*10*h/P;return num('t-rueck',3,'Eine Person ('+m+' kg) soll mit einer Leistung von '+P+' W '+h+' m hochsteigen (g = 10 N/kg). Wie viele Sekunden braucht sie?','s',t,'W = '+m*10+' N · '+h+' m = '+m*10*h+' J, t = W : P = '+m*10*h+' J : '+P+' W = '+fmt(t)+' s',0.02);},
+  ()=>mc('sprint-mc',3,'Warum hat man beim Treppensprint eine grössere Leistung als beim Gehen?',['Die Arbeit ist gleich, aber die Zeit ist kürzer.','Beim Sprinten ist man schwerer.','Beim Sprinten ist die Treppe höher.','Beim Sprinten wirkt weniger Gewichtskraft.'],'Masse und Höhe bleiben gleich, also bleibt die Arbeit gleich. Weil man weniger Zeit braucht, wird P = W : t grösser.')
+ ]
+};
+function nextQuestion(){
+  for(let i=0;i<5;i++){const q=rnd(GEN[S.niv])();if(!ui.lastTopic||q.topic!==ui.lastTopic||i===4){ui.lastTopic=q.topic;
+    if(q.kind==='mc')q.shown=shuffle(q.opts.map((t,i)=>({t,ok:i===0})));return q;}}
+}
+function record(ok){
+  S.hist.push(ok?1:0);
+  S.log.push({n:S.niv,ok:ok?1:0});if(S.log.length>300)S.log.shift();
+  if(S.hist.length>=6){
+    const sum=S.hist.slice(-6).reduce((a,b)=>a+b,0);
+    if(sum===6&&S.niv<3){S.niv++;S.hist=[];}
+    else if(sum<=3&&S.niv>1){S.niv--;S.hist=[];}
+    else if(S.hist.length>8)S.hist=S.hist.slice(-8);
+  }
+}
+
+/* ---------- Speicher ---------- */
+const KEY='halingen-leistung-proto-v1';
+const defaults=()=>({xp:0,niv:1,hist:[],log:[],seen:{},lesson:false,sprint:null,rounds:0,nick:rnd(['Blitz','Funke','Turbo','Watt','Joule','Volt'])+'-'+rnd(['Fuchs','Adler','Luchs','Falke','Dachs','Otter'])});
+let S;
+try{S=Object.assign(defaults(),JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){S=defaults();}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+const bump=n=>{S.xp+=n;};
+const LEVELS=[[0,'Feder'],[80,'Hebel'],[200,'Rampe'],[380,'Flaschenzug'],[620,'Kran'],[920,'Newton']];
+const levelOf=x=>{let l=0;LEVELS.forEach((v,i)=>{if(x>=v[0])l=i;});return l;};
+
+/* ---------- Audio: Clip-Datei, sonst Browser-Stimme ---------- */
+const HAS_AUDIO=false; // auf true setzen, sobald audio/*.mp3 hochgeladen sind
+const AUDIO_URLS={'k1-c0-w':'https://api.plazma.ch/mcp/media/Q5Xifohg0JiU5Veu5jJAMtVsNykiiKlvdKueL2FhgCSSegYWrJrUSlfsxIOg8k47ZJL1Ur9vhkQj_YO8VhVIrDK_ES_X_ZEgeS8SfqzUIs_xc8dFHqqqULO8xqQNStBf7Oak4GZ6y0fVojgDKYD-QyoV2JIn3vL40PZgQJ3NkNmATuo1QWTMN8Grh3Wqu9XMq_iSUv1p-ryirV_tV2cGH0Kw-qsz61CCOhsXR_jy24mKdOwpadp4mmVilaxPxhpB?filename=plazma-sprache.mp3'}; // Testclip Watti (Tutor 9)
+let tok=0,cur=null;
+function note(t){let n=$('note');if(!n){n=document.createElement('div');n.id='note';n.setAttribute('role','status');n.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;background:var(--warn-bg);color:var(--warn);border:3px solid var(--warn);border-radius:14px;padding:12px;font-weight:700';document.body.appendChild(n);}n.textContent=t;clearTimeout(n._t);n._t=setTimeout(()=>{n.remove();},6000);}
+function stopAll(){tok++;try{if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();}catch(e){}if(cur){try{cur.pause();}catch(e){}cur=null;}talk(false);}
+function talk(on){document.querySelectorAll('.watti').forEach(w=>w.classList.toggle('talk',on));}
+function voicePick(kind){
+  let v=[];try{v=speechSynthesis.getVoices().filter(x=>/^de/i.test(x.lang));}catch(e){}
+  const fem=/anna|petra|marlene|vicki|katja|helena|female|weiblich/i,mal=/markus|hans|yannick|stefan|conrad|male|männlich/i;
+  let pick=null;
+  if(kind==='f')pick=v.find(x=>fem.test(x.name));
+  else if(kind==='m')pick=v.find(x=>mal.test(x.name));
+  return pick||v[0]||null;
+}
+function tts(text,kind,done){
+  if(!('speechSynthesis' in window)){note('Dieses Gerät oder diese Ansicht kann nicht vorlesen. Öffne die Seite direkt im Browser.');done();return;}
+  const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';
+  const v=voicePick(kind);if(v)u.voice=v;
+  u.pitch=kind==='m'?.8:kind==='f'?1.15:1.25;u.rate=1.02;u.volume=1;
+  u.onend=done;
+  u.onerror=e=>{if(!e||(e.error!=='canceled'&&e.error!=='interrupted'))note('Vorlesen wurde blockiert. Prüfe Lautstärke und Stumm-Schalter, oder öffne die Seite direkt im Browser.');done();};
+  speechSynthesis.speak(u);
+}
+function playClip(id,text,kind,myTok){
+  return new Promise(res=>{
+    if(myTok!==tok)return res();
+    const src=AUDIO_URLS[id]||(HAS_AUDIO?'audio/'+id+'.mp3':null);
+    if(!src){tts(text,kind,res);return;}
+    let fell=false;
+    const a=new Audio(src);cur=a;
+    const fb=()=>{if(fell)return;fell=true;if(myTok!==tok)return res();tts(text,kind,res);};
+    a.addEventListener('error',fb);a.addEventListener('ended',()=>res());
+    const p=a.play();if(p&&p.catch)p.catch(fb);
+  });
+}
+async function playSeq(items){
+  stopAll();const my=tok;talk(true);
+  for(const it of items){if(my!==tok)return;await playClip(it.id,it.text,it.kind,my);}
+  if(my===tok)talk(false);
+}
+function cardAudio(i,mode){
+  const c=CARDS[i];
+  if(mode==='vorlesen')return [{id:reg('k1-c'+i+'-w','w',c.w),text:c.w,kind:'w'}];
+  return c.p.map((l,j)=>({id:reg('k1-c'+i+'-p'+j,l[0],l[1]),text:l[1],kind:l[0]}));
+}
+CARDS.forEach((c,i)=>{cardAudio(i,'vorlesen');cardAudio(i,'podcast');});
+
+/* ---------- Ansicht ---------- */
+let ui={screen:'home',ci:0,mode:{},pick:{},wk:{},sp:{est:null,m:60,st:22,run:false,t0:0,t:null},R:null,lastTopic:null,hint:false};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const watti=(lvl,mood,cls)=>'<div class="watti '+(cls||'')+'" data-mood="'+(mood||'happy')+'" style="--lvl:'+Math.max(14,Math.min(100,Math.round(lvl)))+'%" aria-hidden="true"><div class="cap"></div><div class="body"><div class="fill"></div><div class="face"><div class="eyes"><i class="eye"></i><i class="eye"></i></div><b class="mouth"></b></div></div></div>';
+const teacherChip=()=>IS_T()?'<span class="chip">Lehrer-Ansicht · Niveau '+S.niv+' von 3</span>':'';
+const allSeen=()=>CARDS.every((c,i)=>S.seen[i]);
+const canPractice=()=>allSeen()&&!!S.sprint;
+
+function viewHome(){
+  const lv=levelOf(S.xp),nx=LEVELS[lv+1],pct=nx?Math.round((S.xp-LEVELS[lv][0])/(nx[0]-LEVELS[lv][0])*100):100;
+  const learned=allSeen(),sp=!!S.sprint;
+  return '<header class="top"><div class="hero"><div><h1>Leistung</h1><p class="lead">Arbeit, Zeit und Watt</p>'+teacherChip()+'</div>'+watti(pct,'happy','big')+'</div>'+
+  '<div class="stats"><div class="stat"><span class="k">Stufe '+(lv+1)+'</span><span class="v">'+LEVELS[lv][1]+'</span></div><div class="stat"><span class="k">Punkte</span><span class="v mono">'+S.xp+' XP</span></div><div class="stat"><span class="k">Runden</span><span class="v mono">'+S.rounds+'</span></div></div>'+
+  '<div class="bar"><div style="width:'+pct+'%"></div></div></header>'+
+  '<main class="wrap"><div class="path">'+
+  '<article class="card chap" style="--sc:var(--pop-pink)"><div class="num" aria-hidden="true">1</div><div><h3>Von der Arbeit zur Leistung</h3><p class="sub">W = F · s und P = W : t</p><p class="small">Lernen mit Vorhersage, Treppensprint und Üben. '+(learned?'Karten gelesen. ':'')+(sp?'Sprint gemessen.':'Sprint offen.')+'</p></div>'+
+  '<div class="acts"><button class="btn btn-primary" data-act="learn">Lernen</button><button class="btn" data-act="practice" '+(canPractice()?'':'disabled')+'>Üben</button></div>'+
+  (canPractice()?'':'<p class="small" style="grid-column:1/-1">Üben schaltet frei, wenn du alle Karten gesehen und den Treppensprint gemacht hast.</p>')+'</article>'+
+  '<article class="card chap locked" style="--sc:var(--pop-cyan)"><div class="num" aria-hidden="true">2</div><div><h3>Leistung im Alltag</h3><p class="sub">Wanderer, Arbeiterinnen, Geräte</p><p class="small">Kommt als Nächstes.</p></div></article>'+
+  '<article class="card chap locked" style="--sc:var(--pop-green)"><div class="num" aria-hidden="true">3</div><div><h3>Energie und Wirkungsgrad</h3><p class="sub">kWh, Energieentwertung</p><p class="small">Kommt als Nächstes.</p></div></article>'+
+  '<article class="card review"><h3 class="lh">Lernstand</h3><p class="small">Erzeugt einen Code mit deinem Stand für die Lehrperson.</p><button class="btn block" data-act="code">Code anzeigen</button>'+(ui.code?'<div class="codebox">'+esc(ui.code)+'</div>':'')+
+  (IS_T()?'<button class="btn block" data-act="cliplist">Audio-Liste kopieren (Plazma)</button><p class="small" id="cpmsg"></p>':'')+'</article>'+
+  '</div><p class="small" style="margin-top:24px">Dein Fortschritt liegt nur auf diesem Gerät. Zufallsname: <span class="mono b">'+S.nick+'</span></p>'+
+  '<button class="btn sm" style="margin-top:12px" data-act="reset">'+(ui.confirmReset?'Sicher? Nochmals tippen':'Fortschritt zurücksetzen')+'</button></main>';
+}
+
+function audioPanel(i){
+  const mode=ui.mode[i]||'lesen',c=CARDS[i];
+  const seg=[['lesen','Lesen'],['vorlesen','Vorlesen'],['podcast','Podcast']].map(x=>'<button class="btn sm'+(mode===x[0]?' on':'')+'" data-act="mode" data-m="'+x[0]+'">'+x[1]+'</button>').join('');
+  let extra='';
+  if(mode==='vorlesen')extra='<button class="btn sm" id="plbtn" data-act="play">▶ Watti liest vor</button>';
+  if(mode==='podcast')extra='<button class="btn sm" id="plbtn" data-act="play">▶ Podcast hören</button><ul class="script">'+c.p.map(l=>'<li class="'+l[0]+'"><b>'+(l[0]==='m'?'Moderator':'Co-Moderatorin')+'</b><br>'+l[1]+'</li>').join('')+'</ul>';
+  return '<div class="audio"><span class="tag">So möchtest du es haben</span><div class="seg3" role="group" aria-label="Darstellung">'+seg+'</div>'+extra+'</div>';
+}
+
+function sprintCard(){
+  const sp=ui.sp,h=sp.st*0.18;
+  const buckets=['unter 150 W','150 bis 300 W','300 bis 600 W','über 600 W'];
+  let html='<div class="sim"><p class="small">Sicherheit: Nur rennen, wenn die Treppe trocken und frei ist. Du darfst auch gehen. Dann ist deine Leistung kleiner, und das ist ein spannender Vergleich.</p>';
+  if(sp.est===null){
+    html+='<p class="q" style="margin-top:12px">Schätze zuerst: Welche Leistung bringst du beim Sprint auf?</p><div class="opts">'+buckets.map((b,i)=>'<button class="opt" data-act="est" data-i="'+i+'"><span class="ltr">'+'ABCD'[i]+'</span><span>'+b+'</span></button>').join('')+'</div>';
+  }else if(S.sprint&&sp.t!==null){
+    const P=S.sprint.P,idx=P<150?0:P<300?1:P<600?2:3;
+    html+='<div class="trio"><div><span class="k">Arbeit</span><b class="mono">'+fmt(S.sprint.W,0)+' J</b></div><div><span class="k">Zeit</span><b class="mono">'+fmt(S.sprint.t)+' s</b></div><div><span class="k">Leistung</span><b class="mono">'+fmt(P,0)+' W</b></div></div>'+
+    '<p class="readout">W = '+fmt(S.sprint.m*10,0)+' N · '+fmt(S.sprint.h,2)+' m = '+fmt(S.sprint.W,0)+' J<br>P = '+fmt(S.sprint.W,0)+' J : '+fmt(S.sprint.t)+' s = <b>'+fmt(P,0)+' W</b><br>Deine Schätzung: '+buckets[sp.est]+'. '+(idx===sp.est?'Treffer!':'Das lag daneben. Vergleiche mit der Rechnung.')+'</p>'+
+    '<button class="btn block" data-act="spagain">Nochmals messen</button>';
+  }else{
+    html+='<label class="sl"><span class="sll">Masse: <b class="mono" id="mv">'+sp.m+'</b> kg</span><input type="range" id="mr" min="30" max="100" step="1" value="'+sp.m+'"></label>'+
+    '<label class="sl"><span class="sll">Stufen: <b class="mono" id="sv">'+sp.st+'</b> (Höhe '+'<span id="hv">'+fmt(h,2)+'</span> m bei 18 cm pro Stufe)</span><input type="range" id="sr" min="8" max="40" step="1" value="'+sp.st+'"></label>'+
+    '<div class="sw" id="sw" aria-live="off">'+(sp.run?'…':'0.0 s')+'</div>'+
+    '<div class="ansrow"><button class="btn btn-primary" style="flex:1" data-act="swstart" '+(sp.run?'disabled':'')+'>Start</button><button class="btn" style="flex:1" data-act="swstop" '+(sp.run?'':'disabled')+'>Stopp</button></div>'+
+    '<button class="btn sm block" data-act="example">Keine Treppe in der Nähe? Beispielwerte nehmen</button>';
+  }
+  return html+'</div>';
+}
+
+function viewLesson(){
+  const i=ui.ci,c=CARDS[i],n=CARDS.length,last=i===n-1;
+  let body='';
+  if(c.type==='predict'){
+    const sel=ui.pick[i];
+    body='<h3 class="q">'+c.q+'</h3><div class="opts">'+c.opts.map((o,k)=>{
+      let cls='opt';if(sel!==undefined){if(k===c.ok)cls+=' good';else if(k===sel)cls+=' bad';}
+      return '<button class="'+cls+'" data-act="pred" data-i="'+k+'" '+(sel!==undefined?'disabled':'')+'><span class="ltr">'+'ABCD'[k]+'</span><span>'+o+'</span></button>';}).join('')+'</div>'+
+      (sel!==undefined?'<div class="fb '+(sel===c.ok?'good':'warn')+'"><div class="fbt">'+(sel===c.ok?'Gut gedacht.':'Spannend, dass du das gedacht hast.')+'</div><div class="fbb">'+c.expl+'</div></div>':'<p class="small" style="margin-top:12px">Weiter geht es, sobald du getippt hast.</p>');
+  }else if(c.type==='worked'){
+    const shown=ui.wk[i]||0;
+    body='<div class="worked"><div class="wt">'+c.given+'</div><ol class="wsteps">'+c.steps.map((s,k)=>'<li class="'+(k<=shown?'':'hid')+'"><div class="wt">'+s[0]+'</div><div class="wm">'+s[1]+'</div></li>').join('')+'</ol><button class="btn sm" data-act="wstep" '+(shown>=c.steps.length-1?'disabled':'')+'>'+(shown>=c.steps.length-1?'Das war es':'Nächster Schritt')+'</button></div>';
+  }else if(c.type==='sprint'){body=sprintCard();}
+  else body='<div class="lbody">'+c.body+'</div>';
+  const canNext=c.type==='predict'?ui.pick[i]!==undefined:c.type==='sprint'?!!S.sprint:true;
+  const dots=CARDS.map((_,k)=>'<span class="dot'+(k<=i?' on':'')+'"></span>').join('');
+  return '<main class="wrap"><div class="row"><button class="btn sm" data-act="home">Zum Lernpfad</button><span class="mono small">Karte '+(i+1)+' von '+n+'</span></div><div class="dots" role="progressbar" aria-valuemin="1" aria-valuemax="'+n+'" aria-valuenow="'+(i+1)+'">'+dots+'</div>'+
+  '<section class="card qcard" style="--sc:var(--pop-pink);position:relative"><h2 class="lh" style="margin-bottom:12px">'+c.h+'</h2>'+body+audioPanel(i)+'</section>'+
+  '<div class="navrow"><button class="btn" data-act="lprev" '+(i===0?'disabled':'')+'>Zurück</button><button class="btn btn-primary" data-act="'+(last?'lfinish':'lnext')+'" '+(canNext?'':'disabled')+'>'+(last?'Lektion abschliessen':'Weiter')+'</button></div></main>';
+}
+
+function viewRound(){
+  const R=ui.R,q=R.q,pct=Math.round(R.i/R.n*100);
+  let body='';
+  if(q.kind==='mc'){
+    body='<div class="opts">'+q.shown.map((o,k)=>{let cls='opt';if(R.done){if(o.ok)cls+=' good';else if(R.sel===k)cls+=' bad';}
+      return '<button class="'+cls+'" data-act="qopt" data-i="'+k+'" '+(R.done?'disabled':'')+'><span class="ltr">'+'ABCD'[k]+'</span><span>'+o.t+'</span></button>';}).join('')+'</div>';
+  }else{
+    body='<label class="sr" for="ans">Antwort in '+q.unit+'</label><div class="ansrow"><input id="ans" class="numin" type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl" value="'+esc(R.input||'')+'" '+(R.done?'disabled':'')+'><span class="unitl mono">'+q.unit+'</span></div><p class="small" style="margin-top:6px">Komma oder Punkt sind okay.</p>'+
+    (R.done?'':'<button class="btn btn-primary block" data-act="qcheck">'+(R.tries?'Nochmals prüfen':'Prüfen')+'</button>')+
+    (R.done||R.hint?'':'<button class="btn sm block" data-act="hint">Tipp anzeigen</button>');
+  }
+  let fb='';
+  if(R.hint&&!R.done)fb+='<div class="fb warn"><div class="fbt">Tipp</div><div class="fbb">'+TIPPS[q.topic]+'</div><button class="btn sm" data-act="saytipp">🔊 Tipp anhören</button></div>';
+  if(R.fb)fb+='<div class="fb '+R.fb.k+'">'+(R.fb.xp?'<span class="xppop">+'+R.fb.xp+' XP</span>':'')+'<div class="fbt">'+R.fb.t+'</div><div class="fbb">'+R.fb.b+'</div><button class="btn sm" data-act="sayfb">🔊 Rückmeldung anhören</button></div>';
+  const mood=!R.fb?'happy':R.fb.k==='good'?'cheer':R.fb.k==='bad'?'sad':'think';
+  const last=R.i===R.n-1;
+  return '<main class="wrap"><div class="row"><button class="btn sm" data-act="quit">Beenden</button><span class="mono small">Frage '+(R.i+1)+' von '+R.n+'</span></div><div class="bar"><div style="width:'+pct+'%"></div></div>'+
+  '<section class="card qcard" style="--sc:var(--pop-yellow);position:relative;margin-top:44px">'+watti(pct,mood,'mini')+'<div class="tags"><span class="tag">Üben</span>'+teacherChip().replace('class="chip"','class="chip" style="margin:0"')+'</div><h2 class="q">'+q.q+'</h2>'+body+'</section>'+fb+
+  (R.done?'<button class="btn btn-primary block" data-act="qnext">'+(last?'Ergebnis ansehen':'Weiter')+'</button>':'')+'</main>';
+}
+
+function viewSummary(){
+  const R=ui.R,lv=LEVELS[levelOf(S.xp)];
+  return '<main class="wrap"><section class="card"><div style="float:right">'+watti(100,'cheer','big')+'</div><div class="tag">Runde beendet</div><h2 class="sumh" style="margin:8px 0">'+(R.c>=R.n-1?'Stark.':R.c>=R.n/2?'Gut gemacht.':'Weiter üben lohnt sich.')+'</h2>'+
+  '<p style="font-size:1.25rem;margin-bottom:12px"><span class="mono b">'+R.c+' von '+R.n+'</span> auf Anhieb richtig.</p>'+
+  '<p class="mono b" style="font-size:1.5rem;color:var(--accent-text)">+'+R.xp+' XP</p>'+teacherChip()+
+  (R.missed.length?'<div class="note"><div class="tag">Das kommt wieder</div><ul>'+[...new Set(R.missed)].map(t=>'<li>'+t+'</li>').join('')+'</ul></div>':'')+
+  '<p class="small" style="margin-top:12px">Stufe: '+lv[1]+'</p></section>'+
+  '<button class="btn btn-primary block" data-act="practice">Noch eine Runde</button><button class="btn block" data-act="home">Zum Lernpfad</button></main>';
+}
+
+function viewDone(){
+  return '<main class="wrap"><section class="card"><div style="float:right">'+watti(100,'cheer','big')+'</div><h2 class="sumh">Lektion geschafft.</h2><p style="margin:12px 0">'+(ui.gain?'<span class="mono b">+'+ui.gain+' XP</span> für die Lektion.':'Die Punkte gab es schon beim ersten Mal.')+'</p><p class="small">Jetzt wendest du das Gelernte in einer Übungsrunde an.</p></section>'+
+  '<button class="btn btn-primary block" data-act="practice" '+(canPractice()?'':'disabled')+'>Jetzt üben</button><button class="btn block" data-act="home">Zum Lernpfad</button></main>';
+}
+
+function render(){
+  stopAll();
+  $('app').innerHTML=ui.screen==='home'?viewHome():ui.screen==='lesson'?viewLesson():ui.screen==='round'?viewRound():ui.screen==='summary'?viewSummary():viewDone();
+  const sr=$('sr'),mr=$('mr');
+  if(mr)mr.addEventListener('input',()=>{ui.sp.m=+mr.value;$('mv').textContent=ui.sp.m;});
+  if(sr)sr.addEventListener('input',()=>{ui.sp.st=+sr.value;$('sv').textContent=ui.sp.st;$('hv').textContent=fmt(ui.sp.st*0.18,2);});
+  if(ui.screen==='round'&&ui.R.q.kind==='num'&&!ui.R.done){const a=$('ans');if(a)setTimeout(()=>a.focus(),30);}
+  if(ui.screen!=='home'||true)window.scrollTo(0,0);
+}
+
+/* ---------- Üben ---------- */
+function startRound(){
+  ui.R={n:8,i:0,c:0,xp:0,missed:[],q:null,done:false,tries:0,hint:false,input:'',fb:null,sel:null,usedHint:false};
+  ui.R.q=nextQuestion();ui.screen='round';render();
+}
+function parseNum(s){s=String(s).trim().replace(/[\s\u202F\u2019']/g,'').replace(',','.');return /^-?\d*\.?\d+$/.test(s)?parseFloat(s):NaN;}
+function finishQ(ok,first){
+  const R=ui.R;R.done=true;
+  const firstTry=first&&!R.usedHint;
+  record(firstTry);
+  if(firstTry)R.c++;else R.missed.push(TIPPS[R.q.topic].split('.')[0]);
+  const gain=firstTry?10:R.tries||R.usedHint?5:0;
+  if(ok){R.xp+=gain;}
+  R.sayIds=ok?[rnd(FB_OK)]:[rnd(FB_BAD),'tipp-'+R.q.topic];
+}
+function answerMC(i){
+  const R=ui.R;if(R.done)return;R.sel=i;const ok=R.q.shown[i].ok;
+  finishQ(ok,true);
+  R.fb=ok?{k:'good',t:'Richtig.',b:R.q.expl,xp:R.usedHint?5:10}:{k:'bad',t:'Nicht ganz.',b:R.q.expl};
+  render();
+}
+function checkNum(){
+  const R=ui.R,q=R.q;if(R.done)return;
+  const el=$('ans');R.input=el?el.value:R.input;
+  const x=parseNum(R.input);
+  if(isNaN(x)){R.fb={k:'warn',t:'Gib eine Zahl ein.',b:'Zum Beispiel 120 oder 2,5.'};render();return;}
+  const ok=Math.abs(x-q.ans)<=Math.max(Math.abs(q.ans)*q.tol,0.05);
+  if(ok){finishQ(true,R.tries===0);R.fb={k:'good',t:R.tries?'Richtig im zweiten Versuch.':'Richtig.',b:q.expl,xp:R.tries||R.usedHint?5:10};}
+  else if(R.tries===0){R.tries=1;R.hint=true;R.usedHint=true;R.fb={k:'warn',t:'Noch nicht.',b:'Du hast noch einen Versuch.'};R.sayIds=[rnd(FB_BAD),'tipp-'+q.topic];}
+  else{finishQ(false,false);R.fb={k:'bad',t:'Nicht ganz.',b:'Richtig wäre '+fmt(q.ans,2)+' '+q.unit+'.<br>'+q.expl};}
+  render();
+}
+function nextQ(){
+  const R=ui.R;R.i++;
+  if(R.i>=R.n){bump(R.xp+(R.c>=R.n-1?10:0));S.rounds++;save();R.xp+=R.c>=R.n-1?10:0;ui.screen='summary';render();return;}
+  Object.assign(R,{q:nextQuestion(),done:false,tries:0,hint:false,input:'',fb:null,sel:null,usedHint:false,sayIds:null});
+  save();render();
+}
+function sayList(ids){
+  playSeq(ids.map(id=>{const c=CLIPS[id];return {id,text:c?c.text:'',kind:'w'};}));
+}
+
+/* ---------- Sprint ---------- */
+let swTimer=null;
+function swStart(){
+  const sp=ui.sp;sp.run=true;sp.t0=performance.now();sp.t=null;render();
+  swTimer=setInterval(()=>{const el=$('sw');if(el)el.textContent=((performance.now()-sp.t0)/1000).toFixed(1)+' s';},100);
+}
+function measure(t,m,st){
+  const h=st*0.18,W=m*10*h;
+  S.sprint={m,h,t:Math.max(1,t),W,P:W/Math.max(1,t)};
+  ui.sp.t=S.sprint.t;
+  if(!S.seen[ui.ci])S.seen[ui.ci]=true;
+  bump(10);save();render();
+}
+function swStop(){
+  clearInterval(swTimer);const sp=ui.sp,t=(performance.now()-sp.t0)/1000;sp.run=false;
+  measure(Math.round(t*10)/10,sp.m,sp.st);
+}
+
+/* ---------- Lernstand-Code (Prototyp: noch nicht verschlüsselt) ---------- */
+function payload(){
+  const last=S.log.slice(-30),acc=last.length?Math.round(last.reduce((a,b)=>a+b.ok,0)/last.length*100):null;
+  return {v:1,tp:'leistung-k1',n:S.nick,x:S.xp,ro:S.rounds,niv:S.niv,acc30:acc,lek:S.lesson?1:0,sp:S.sprint?Math.round(S.sprint.P):null,i:Math.floor(Date.now()/1000)};
+}
+
+/* ---------- Eingaben ---------- */
+function onAct(b){
+  const a=b.dataset.act,i=ui.ci;
+  if(a==='home'){ui.screen='home';ui.code=null;render();}
+  else if(a==='learn'){ui.screen='lesson';ui.ci=0;S.seen[0]=S.seen[0]||false;render();}
+  else if(a==='lnext'){S.seen[ui.ci]=true;ui.ci=Math.min(CARDS.length-1,ui.ci+1);save();render();}
+  else if(a==='lprev'){ui.ci=Math.max(0,ui.ci-1);render();}
+  else if(a==='lfinish'){S.seen[ui.ci]=true;ui.gain=0;if(!S.lesson){S.lesson=true;ui.gain=15;bump(15);}save();ui.screen='done';render();}
+  else if(a==='mode'){ui.mode[i]=b.dataset.m;render();}
+  else if(a==='play'){
+    if(b.dataset.on==='1'){stopAll();b.dataset.on='';b.textContent='▶ Abspielen';return;}
+    b.dataset.on='1';b.textContent='■ Stopp';
+    const items=cardAudio(i,ui.mode[i]);
+    playSeq(items).then(()=>{const e=$('plbtn');if(e){e.dataset.on='';e.textContent='▶ Nochmals';}});
+  }
+  else if(a==='pred'){ui.pick[i]=+b.dataset.i;S.seen[i]=true;render();}
+  else if(a==='wstep'){ui.wk[i]=(ui.wk[i]||0)+1;render();}
+  else if(a==='est'){ui.sp.est=+b.dataset.i;render();}
+  else if(a==='swstart')swStart();
+  else if(a==='swstop')swStop();
+  else if(a==='example'){measure(8,60,22);}
+  else if(a==='spagain'){ui.sp.t=null;ui.sp.est=null;S.sprint=null;render();}
+  else if(a==='practice')startRound();
+  else if(a==='qopt')answerMC(+b.dataset.i);
+  else if(a==='qcheck')checkNum();
+  else if(a==='hint'){const el=$('ans');if(el)ui.R.input=el.value;ui.R.hint=true;ui.R.usedHint=true;render();}
+  else if(a==='saytipp')sayList(['tipp-'+ui.R.q.topic]);
+  else if(a==='sayfb')sayList(ui.R.sayIds||[FB_OK[0]]);
+  else if(a==='qnext')nextQ();
+  else if(a==='quit'){save();ui.screen='home';render();}
+  else if(a==='code'){ui.code='LP1.'+btoa(unescape(encodeURIComponent(JSON.stringify(payload()))));render();}
+  else if(a==='cliplist'){
+    const out=Object.keys(CLIPS).map(k=>({id:k,voice:CLIPS[k].voice,text:CLIPS[k].text}));
+    const txt=JSON.stringify(out,null,1),msg=$('cpmsg');
+    try{navigator.clipboard.writeText(txt).then(()=>{if(msg)msg.textContent=out.length+' Clips kopiert.';},()=>{if(msg)msg.textContent='Kopieren nicht möglich.';});}catch(e){if(msg)msg.textContent='Kopieren nicht möglich.';}
+  }
+  else if(a==='reset'){if(ui.confirmReset){S=defaults();save();ui.confirmReset=false;ui.pick={};ui.wk={};ui.sp={est:null,m:60,st:22,run:false,t0:0,t:null};}else ui.confirmReset=true;render();}
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;onAct(b);});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='ans'){e.preventDefault();checkNum();}});
+window.addEventListener('hashchange',render);
+try{speechSynthesis.getVoices();}catch(e){}
+render();
+})();
+</script>
+</body>
+</html>
