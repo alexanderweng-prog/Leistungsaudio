@@ -1,0 +1,21 @@
+Leistung-App (Prototyp, Kapitel 1) - fertig fuer GitHub Pages
+
+Inhalt
+- leistung.html   Die App.
+- audio/          37 Sprachclips (Watti = Tutor 9, Moderator = Tutor 6,
+                  Co-Moderatorin = Tutor 3). Die Dateinamen duerfen nicht
+                  geaendert werden.
+
+Hochladen
+1. ZIP entpacken.
+2. Im Repository "Add file" und "Upload files" waehlen.
+3. leistung.html UND den ganzen Ordner audio/ hineinziehen
+   (auf dem Handy ggf. ueber einen Computer, Ordner-Upload geht am PC am besten).
+4. "Commit changes". Nach ein bis zwei Minuten ist die App erreichbar unter
+   https://DEIN-NAME.github.io/DEIN-REPO/leistung.html
+
+Lehrer-Ansicht: leistung.html#lehrer
+
+Hinweis
+- Fehlt eine Audiodatei, spricht die App mit der Browserstimme weiter.
+- Der Lernstand-Code ist noch nicht verschluesselt und noch kein QR.

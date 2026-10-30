@@ -259,8 +259,8 @@ const LEVELS=[[0,'Feder'],[80,'Hebel'],[200,'Rampe'],[380,'Flaschenzug'],[620,'K
 const levelOf=x=>{let l=0;LEVELS.forEach((v,i)=>{if(x>=v[0])l=i;});return l;};
 
 /* ---------- Audio: Clip-Datei, sonst Browser-Stimme ---------- */
-const HAS_AUDIO=false; // auf true setzen, sobald audio/*.mp3 hochgeladen sind
-const AUDIO_URLS={'k1-c0-w':'https://api.plazma.ch/mcp/media/Q5Xifohg0JiU5Veu5jJAMtVsNykiiKlvdKueL2FhgCSSegYWrJrUSlfsxIOg8k47ZJL1Ur9vhkQj_YO8VhVIrDK_ES_X_ZEgeS8SfqzUIs_xc8dFHqqqULO8xqQNStBf7Oak4GZ6y0fVojgDKYD-QyoV2JIn3vL40PZgQJ3NkNmATuo1QWTMN8Grh3Wqu9XMq_iSUv1p-ryirV_tV2cGH0Kw-qsz61CCOhsXR_jy24mKdOwpadp4mmVilaxPxhpB?filename=plazma-sprache.mp3'}; // Testclip Watti (Tutor 9)
+const HAS_AUDIO=true; // Clips liegen im Ordner audio/ neben dieser Datei
+const AUDIO_URLS={}; // optional: einzelne Clips per Link ueberschreiben
 let tok=0,cur=null;
 function note(t){let n=$('note');if(!n){n=document.createElement('div');n.id='note';n.setAttribute('role','status');n.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;background:var(--warn-bg);color:var(--warn);border:3px solid var(--warn);border-radius:14px;padding:12px;font-weight:700';document.body.appendChild(n);}n.textContent=t;clearTimeout(n._t);n._t=setTimeout(()=>{n.remove();},6000);}
 function stopAll(){tok++;try{if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();}catch(e){}if(cur){try{cur.pause();}catch(e){}cur=null;}talk(false);}
