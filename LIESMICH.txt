@@ -1,21 +1,26 @@
 Leistung-App (Prototyp, Kapitel 1) - fertig fuer GitHub Pages
 
 Inhalt
-- leistung.html   Die App.
-- audio/          37 Sprachclips (Watti = Tutor 9, Moderator = Tutor 6,
-                  Co-Moderatorin = Tutor 3). Die Dateinamen duerfen nicht
-                  geaendert werden.
+- leistung.html   Die App (QR-Bibliothek ist eingebaut, kein Internet noetig).
+- audio/          61 Sprachclips (37 Lernclips + 24 Hinweise bei Fehlern) (Watti = Tutor 9, Moderator = Tutor 6,
+                  Co-Moderatorin = Tutor 3). Dateinamen nicht aendern.
 
 Hochladen
 1. ZIP entpacken.
 2. Im Repository "Add file" und "Upload files" waehlen.
-3. leistung.html UND den ganzen Ordner audio/ hineinziehen
-   (auf dem Handy ggf. ueber einen Computer, Ordner-Upload geht am PC am besten).
-4. "Commit changes". Nach ein bis zwei Minuten ist die App erreichbar unter
+3. leistung.html und den Ordner audio/ hineinziehen (Ordner-Upload am Computer).
+4. "Commit changes". Nach ein bis zwei Minuten erreichbar unter
    https://DEIN-NAME.github.io/DEIN-REPO/leistung.html
 
-Lehrer-Ansicht: leistung.html#lehrer
+Lernstand
+- Schueler tippen auf "QR-Code anzeigen". Der Code ist verschluesselt
+  (ECDH P-256 + AES-GCM). Nur die Lehrperson kann ihn mit der Datei
+  lehrer-NUR-LOKAL.html lesen. Diese Datei gehoert NICHT auf GitHub.
 
-Hinweis
-- Fehlt eine Audiodatei, spricht die App mit der Browserstimme weiter.
-- Der Lernstand-Code ist noch nicht verschluesselt und noch kein QR.
+Lehrer-Ansicht in der App: leistung.html#lehrer (zeigt das Niveau live)
+
+Gezielte Rueckmeldung
+- Bei Rechenaufgaben und bei Auswahlfragen erkennt die App typische Fehler (z. B. Gewichtskraft vergessen, Minuten nicht
+  in Sekunden, durch die falsche Grösse geteilt) und sagt Watti-Hinweise dazu.
+- Die haeufigsten Fehler eines Schuelers stehen verschluesselt im QR-Code und erscheinen
+  in der Lehrer-Auswertung.
