@@ -133,6 +133,7 @@ input[type=range]{width:100%;height:36px;margin:0;accent-color:var(--primary)}
 .review{background:var(--accent-bg)}
 .note{border-left:6px solid var(--pop-pink);padding-left:var(--s3);margin-top:var(--s3)}
 .qrbox{background:#fff;padding:8px;border:3px solid var(--line);border-radius:14px;margin-top:12px;display:flex;justify-content:center}.qrbox svg{width:100%;max-width:360px;height:auto;display:block}
+.lbody ul{margin:0 0 12px;padding-left:20px}.lbody li{margin:4px 0}
 .codebox{font-family:var(--font-mono);font-size:.75rem;word-break:break-all;border:3px dashed var(--line);border-radius:14px;padding:var(--s3);margin-top:var(--s3);user-select:all}
 .xppop{float:right;background:var(--pop-yellow);color:var(--ink);border:3px solid var(--line);border-radius:999px;padding:0 12px;font-family:var(--font-display);font-weight:700}
 
@@ -2462,7 +2463,7 @@ var qrcode = function() {
 const $=id=>document.getElementById(id);
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-const fmt=(n,d)=>Number(n).toLocaleString('de-CH',{maximumFractionDigits:d===undefined?1:d});
+const fmt=(n,d)=>Number(n).toLocaleString('de-CH',{maximumFractionDigits:d===undefined?1:d}).replace('.',',');
 const IS_T=()=>location.hash==='#lehrer';
 
 /* ---------- Stimmen (Plazma gemini-tts) ---------- */
@@ -2472,7 +2473,7 @@ function reg(id,voice,text){CLIPS[id]={voice:VOICES[voice],text};return id;}
 
 /* ---------- Lerninhalt Kapitel 1 ---------- */
 const merk=h=>'<div class="merk"><span class="mk" aria-hidden="true">★</span><div>'+h+'</div></div>';
-const CARDS=[
+const CARDS_K1=[
  {type:'predict',h:'Wer leistet mehr?',
   q:'Anna und Ben tragen je eine 20-kg-Kiste im Treppenhaus 4 m hoch. Anna braucht 20 s, Ben nur 10 s. Was denkst du?',
   opts:['Ben verrichtet doppelt so viel Arbeit.','Beide verrichten gleich viel Arbeit, aber Ben ist leistungsstärker.','Anna verrichtet mehr Arbeit, weil sie länger arbeitet.','Beide haben dieselbe Leistung.'],ok:1,
@@ -2586,38 +2587,177 @@ const GEN={
   ()=>mc('sprint-mc',3,'Du trägst eine doppelt so schwere Last gleich hoch in gleicher Zeit. Was gilt für die Leistung?',['Sie ist doppelt so gross.','Sie ist gleich gross.','Sie ist halb so gross.','Sie ist viermal so gross.'],'Doppelte Last heisst doppelte Arbeit. Bei gleicher Zeit ist die Leistung doppelt so gross.',[null,'m-last','m-last','m-doppelt'])
  ]
 };
+const CARDS_K2=[{"type": "predict", "h": "Wanderer am Berg", "q": "Ein Wanderer (70 kg) steigt in 2 Stunden 600 m hoch. Wie gross ist seine mittlere Leistung ungefähr?", "opts": ["Unter 50 W", "50 bis 150 W", "150 bis 400 W", "Über 400 W"], "ok": 1, "expl": "Er verrichtet etwa 420 000 J in 7200 s. Das ergibt rund 58 W. Bei Ausdauer verteilt sich die Arbeit auf lange Zeit, darum ist die Leistung viel kleiner als bei einem Sprint.", "w": "Schätze zuerst, bevor du rechnest. Ein Wanderer mit siebzig Kilogramm steigt in zwei Stunden sechshundert Meter hoch. Wie gross ist seine mittlere Leistung ungefähr? Wähle eine Antwort.", "p": [["m", "Ein Wanderer, siebzig Kilo, sechshundert Höhenmeter in zwei Stunden. Das klingt nach harter Arbeit."], ["f", "Aber wie viel Leistung ist das eigentlich? Ich würde auf mehrere hundert Watt tippen."], ["m", "Tipp zuerst, dann rechnen wir es gleich gemeinsam nach."]]}, {"type": "text", "h": "Richtwerte im Alltag", "body": "<p>Leistung gibt es überall. Diese Zahlen helfen dir beim Schätzen:</p><ul><li>Mensch, den ganzen Tag: etwa <b>100 W</b></li><li>Mensch, kurzer Sprint: über <b>1000 W</b></li><li>LED-Lampe: <b>10 W</b>, Fernseher: <b>100 W</b></li><li>Föhn oder Wasserkocher: <b>1800 bis 2000 W</b></li><li>Auto: etwa <b>70 kW</b> (1 kW = 1000 W)</li></ul><div class=\"merk\"><span class=\"mk\" aria-hidden=\"true\">★</span><div><b>1 PS ≈ 735 W</b></div></div>", "w": "Ein paar Richtwerte helfen dir beim Schätzen. Ein Mensch leistet den ganzen Tag über ungefähr hundert Watt, im kurzen Sprint auch über tausend. Eine LED-Lampe braucht zehn Watt, ein Fernseher hundert. Föhn und Wasserkocher liegen bei fast zweitausend Watt. Ein Auto hat rund siebzigtausend Watt, also siebzig Kilowatt. Und eine Pferdestärke sind etwa siebenhundertfünfunddreissig Watt.", "p": [["f", "Ich merke mir: Mensch hundert Watt, Föhn fast zweitausend."], ["m", "Genau. Alles, was etwas erhitzt, braucht meist sehr viel Leistung."], ["f", "Und ein Auto hat siebzig Kilowatt, also siebzigtausend Watt."]]}, {"type": "worked", "h": "Vorgerechnet: Der Wanderer", "given": "Ein Wanderer (70 kg) steigt in 2 Stunden um 600 m. Wie gross ist seine mittlere Leistung?", "steps": [["Gewichtskraft", "F = 70 kg · 10 N/kg = 700 N"], ["Arbeit", "W = 700 N · 600 m = 420 000 J"], ["Zeit in Sekunden", "t = 2 h = 2 · 3600 s = 7200 s"], ["Leistung", "P = 420 000 J : 7200 s ≈ 58 W"]], "w": "Rechnen wir den Wanderer gemeinsam. Gewichtskraft: siebzig mal zehn, siebenhundert Newton. Arbeit: siebenhundert mal sechshundert, vierhundertzwanzigtausend Joule. Die Zeit müssen wir in Sekunden umrechnen: zwei Stunden sind siebentausendzweihundert Sekunden. Leistung: vierhundertzwanzigtausend durch siebentausendzweihundert, ungefähr achtundfünfzig Watt.", "p": [["m", "Schritt eins und zwei kennst du schon: Gewichtskraft siebenhundert Newton, Arbeit vierhundertzwanzigtausend Joule."], ["f", "Und jetzt kommt der Stolperstein: Zwei Stunden müssen in Sekunden umgerechnet werden."], ["m", "Ergebnis: rund achtundfünfzig Watt. Viel weniger als ein Sprint, aber dafür zwei Stunden lang."]]}, {"type": "text", "h": "Teamarbeit: Leistungen addieren sich", "body": "<p>Wenn mehrere gleichzeitig arbeiten, <b>addieren sich ihre Leistungen</b>.</p><div class=\"merk\"><span class=\"mk\" aria-hidden=\"true\">★</span><div><b>P gesamt = P₁ + P₂ + …</b></div></div><p>Zwei Personen mit je 80 W leisten zusammen 160 W. Für dieselbe Arbeit brauchen sie nur <b>halb so lang</b>.</p>", "w": "Wenn mehrere Personen oder Maschinen gleichzeitig arbeiten, addieren sich ihre Leistungen. Zwei Personen mit je achtzig Watt leisten zusammen hundertsechzig Watt. Darum brauchen sie für dieselbe Arbeit nur die halbe Zeit.", "p": [["f", "Wenn wir zu zweit tragen, geht es doppelt so schnell?"], ["m", "Genau, denn die Leistungen werden zusammengezählt. Doppelte Leistung heisst halbe Zeit bei gleicher Arbeit."], ["f", "Und bei vier Personen nur ein Viertel der Zeit."]]}, {"type": "rank", "h": "Mitmachen: Geräte ordnen", "w": "Jetzt bist du dran. Vier Geräte erscheinen. Tippe sie in der Reihenfolge an: zuerst das mit der kleinsten Leistung, am Schluss das mit der grössten. Danach siehst du die echten Werte.", "p": [["f", "Ich tippe: Handy-Ladegerät ist am kleinsten und der Backofen am grössten."], ["m", "Gut geraten. Schau danach genau hin, wo du dich verschätzt hast."], ["f", "Meistens überrascht mich, wie viel der Staubsauger braucht."]]}];
+const CARDS_K3=[{"type": "predict", "h": "Wasserkocher oder LED-Lampe?", "q": "Ein Wasserkocher (2000 W) läuft 3 Minuten. Eine LED-Lampe (10 W) leuchtet 10 Stunden. Welche braucht mehr Energie?", "opts": ["Der Wasserkocher", "Die LED-Lampe", "Beide gleich viel", "Das lässt sich nicht vergleichen"], "ok": 2, "expl": "Wasserkocher: 2000 W · 180 s = 360 000 J. LED-Lampe: 10 W · 36 000 s = 360 000 J. Gleich viel! Energie ist Leistung mal Zeit, und eine kleine Leistung über lange Zeit kann genauso viel ausmachen.", "w": "Zwei Geräte im Vergleich. Ein Wasserkocher mit zweitausend Watt läuft drei Minuten. Eine LED-Lampe mit zehn Watt leuchtet zehn Stunden. Welche braucht mehr Energie? Tippe zuerst, bevor du rechnest.", "p": [["m", "Ein Wasserkocher mit zweitausend Watt, nur drei Minuten. Eine LED mit zehn Watt, aber zehn Stunden lang."], ["f", "Der Wasserkocher hat zweihundertmal mehr Leistung, also braucht er auch mehr Energie, oder?"], ["m", "Tipp erst, dann überprüfen wir, ob das stimmt."]]}, {"type": "text", "h": "Energie und die Kilowattstunde", "body": "<p>Energie ist Leistung mal Zeit: <b>E = P · t</b>.</p><p>Im Haushalt rechnet man in <b>Kilowattstunden (kWh)</b> statt in Joule.</p><div class=\"merk\"><span class=\"mk\" aria-hidden=\"true\">★</span><div><b>1 kWh</b> = 1000 W · 3600 s = 3 600 000 J<br>So viel Energie braucht ein Gerät mit 1000 W in einer Stunde.</div></div><p>Dazu rechnest du die Leistung in <b>kW</b> und die Zeit in <b>h</b>: E in kWh = P in kW · t in h.</p>", "w": "Energie ist Leistung mal Zeit. Im Haushalt misst man sie in Kilowattstunden. Eine Kilowattstunde ist die Energie, wenn tausend Watt eine Stunde lang laufen. Das sind drei Komma sechs Millionen Joule. Zum Rechnen nimmst du die Leistung in Kilowatt und die Zeit in Stunden.", "p": [["f", "Warum rechnet man nicht einfach in Joule?"], ["m", "Weil die Zahlen riesig würden. Eine Kilowattstunde sind schon über dreieinhalb Millionen Joule."], ["f", "Also Kilowatt mal Stunden, und fertig."]]}, {"type": "worked", "h": "Vorgerechnet: Was kostet der Föhn?", "given": "Ein Föhn (1800 W) läuft 10 Minuten. 1 kWh kostet 25 Rappen. Was kostet das?", "steps": [["Leistung in kW", "P = 1800 W = 1,8 kW"], ["Zeit in Stunden", "t = 10 min = 1/6 h ≈ 0,167 h"], ["Energie", "E = 1,8 kW · 0,167 h = 0,3 kWh"], ["Kosten", "0,3 kWh · 25 Rp/kWh = 7,5 Rp"]], "w": "Was kostet das Föhnen? Der Föhn hat achtzehnhundert Watt, das sind eins Komma acht Kilowatt. Zehn Minuten sind ein Sechstel einer Stunde. Energie: eins Komma acht mal ein Sechstel ergibt null Komma drei Kilowattstunden. Bei fünfundzwanzig Rappen pro Kilowattstunde kostet das siebeneinhalb Rappen.", "p": [["m", "Erst die Einheiten anpassen: achtzehnhundert Watt sind eins Komma acht Kilowatt."], ["f", "Und zehn Minuten sind ein Sechstel einer Stunde."], ["m", "Dann null Komma drei Kilowattstunden mal fünfundzwanzig Rappen: siebeneinhalb Rappen."]]}, {"type": "text", "h": "Wirkungsgrad und Energieentwertung", "body": "<p>Kein Gerät wandelt alle Energie in das um, was du willst. Ein Teil wird zu <b>Abwärme</b>.</p><div class=\"merk\"><span class=\"mk\" aria-hidden=\"true\">★</span><div><b>Wirkungsgrad η = genutzte Energie : zugeführte Energie</b><br>meist in Prozent angegeben</div></div><p>Glühlampe: nur etwa 5 % werden Licht, der Rest ist Wärme. LED: etwa 30 %.</p><p>Energie geht nie verloren (<b>Energieerhaltung</b>). Aber die Abwärme lässt sich kaum noch nutzen. Das heisst <b>Energieentwertung</b>.</p>", "w": "Kein Gerät nutzt alle Energie. Der Wirkungsgrad ist die genutzte Energie geteilt durch die zugeführte Energie, meistens in Prozent. Eine Glühlampe macht nur fünf Prozent zu Licht, der Rest ist Wärme. Die Energie geht dabei nie verloren, aber die Abwärme lässt sich kaum noch nutzen. Das heisst Energieentwertung.", "p": [["f", "Wenn die Glühlampe nur fünf Prozent Licht macht, wo bleibt der Rest?"], ["m", "Als Wärme im Raum. Die Energie ist noch da, aber du kannst sie nicht mehr sinnvoll nutzen."], ["f", "Darum heisst das Energieentwertung und nicht Energieverlust."]]}, {"type": "kwh", "h": "Mitmachen: Energie-Detektiv", "w": "Jetzt bist du Energie-Detektiv. Wähle ein Gerät und stelle die Dauer ein. Die App zeigt dir die Energie in Kilowattstunden und die Kosten. Deine Aufgabe: Finde eine Einstellung, bei der ungefähr eine Kilowattstunde verbraucht wird.", "p": [["f", "Mit dem Föhn bräuchte ich etwa eine halbe Stunde, schätze ich."], ["m", "Rechne zuerst im Kopf: Eine Kilowattstunde sind tausend Watt eine Stunde lang."], ["f", "Dann braucht die LED-Lampe hundert Stunden, das schaffe ich nie."]]}];
+const TIPPS2={"w-std": "Rechne die Zeit zuerst in Sekunden um. Eine Stunde hat dreitausendsechshundert Sekunden.", "p-add": "Wenn mehrere gleichzeitig arbeiten, addierst du ihre Leistungen.", "t-w": "Zeit ist Arbeit durch Leistung.", "p-ps": "Multipliziere die Pferdestärken mit siebenhundertfünfunddreissig Watt.", "k2-wissen": "Überlege, welche Grösse gleich bleibt und welche sich ändert.", "e-kwh2": "Rechne die Leistung in Kilowatt und die Zeit in Stunden. Dann multiplizierst du.", "k3-kosten": "Kosten sind Energie in Kilowattstunden mal Preis pro Kilowattstunde.", "k3-eta": "Wirkungsgrad ist genutzte Energie durch zugeführte Energie, mal hundert für Prozent.", "k3-verlust": "Die Abwärme ist zugeführte minus genutzte Energie.", "k3-wissen": "Energie geht nie verloren. Sie wird nur umgewandelt."};
+const TRAPS2={"std": "Du hast die Stunden nicht in Sekunden umgerechnet. Eine Stunde hat dreitausendsechshundert Sekunden.", "noadd": "Du musst die Leistungen zusammenzählen, wenn mehrere gleichzeitig arbeiten.", "nor": "Du hast die Masse des Rucksacks vergessen. Zähle sie zur Körpermasse dazu.", "kw": "Du hast die Leistung nicht in Kilowatt umgerechnet. Tausend Watt sind ein Kilowatt.", "pct": "Gib den Wirkungsgrad in Prozent an. Multipliziere dazu mit hundert.", "minh": "Du hast die Minuten nicht in Stunden umgerechnet. Eine Stunde hat sechzig Minuten.", "nopreis": "Du hast die Kosten noch nicht berechnet. Multipliziere die Energie mit dem Preis pro Kilowattstunde.", "abw": "Das ist der Anteil der Abwärme. Der Wirkungsgrad ist der genutzte Anteil.", "nutz": "Das ist die genutzte Energie. Gesucht ist die Abwärme: zugeführte minus genutzte Energie.", "tage": "Du hast nur einen Tag gerechnet. Multipliziere mit der Anzahl Tage.", "proz": "Prozent bedeutet durch hundert. Teile den Wirkungsgrad in Prozent durch hundert."};
+const MIS2={"k-mensch": "Ein Mensch leistet dauerhaft nur etwa hundert Watt.", "k-geraet": "Geräte, die etwas erhitzen, haben meist die grösste Leistung.", "k-umgekehrt": "Mehr Arbeiter bedeuten mehr Leistung, also weniger Zeit.", "k-halb": "Doppelt so viele Arbeiter brauchen die halbe Zeit, nicht ein Viertel.", "k-ausdauer": "Kurz geht viel Arbeit pro Sekunde, über viele Stunden aber nur wenig.", "k3-kwh-einheit": "Kilowattstunde ist Leistung mal Zeit, also eine Energie.", "k3-eta-wissen": "Wirkungsgrad ist genutzte Energie durch zugeführte Energie.", "k3-erhalt": "Energie verschwindet nicht und vermehrt sich nicht. Sie wird nur in andere Formen umgewandelt.", "k3-abwaerme": "Bei der Energieentwertung wird Energie zu Abwärme, die sich kaum noch nutzen lässt.", "k3-led-eta": "Effizienter heisst: ein höherer Wirkungsgrad, also mehr genutzte Energie im Verhältnis zur zugeführten.", "k3-eta-100": "Der Wirkungsgrad kann nie über hundert Prozent liegen, denn man kann nicht mehr Energie nutzen, als man hineinsteckt."};
+/* ===== Kapitel 2 und 3: Inhalt, Aufgaben, Hinweise ===== */
+Object.assign(TIPPS,TIPPS2);Object.keys(TIPPS2).forEach(k=>reg('tipp-'+k,'w',TIPPS2[k]));
+Object.assign(TRAPS,TRAPS2);Object.keys(TRAPS2).forEach(k=>reg('trap-'+k,'w',TRAPS2[k]));
+Object.assign(MIS,MIS2);Object.keys(MIS2).forEach(k=>reg('hint-'+k,'w',MIS2[k]));
+const GEN2={
+ 1:[
+  ()=>{const P=rnd([20,40,50,60,100,150,200]),t=rnd([4,5,10,20,30]),W=P*t;return num('p-wt',1,'Ein Elektromotor verrichtet '+W+' J Arbeit in '+t+' s. Welche Leistung hat er?','W',P,'P = W : t = '+W+' J : '+t+' s = '+P+' W',0.015,[[W*t,'mul'],[t/W,'inv']]);},
+  ()=>{const P=rnd([30,60,75,100,150]),t=rnd([2,5,10,20]);return num('w-pt',1,'Ein Ventilator hat eine Leistung von '+P+' W und läuft '+t+' s. Wie viel Arbeit verrichtet er?','J',P*t,'W = P · t = '+P+' W · '+t+' s = '+P*t+' J',0.015,[[P/t,'div']]);},
+  ()=>{const n=rnd([2,3,4,5]),P=rnd([50,80,100,120]);return num('p-add',1,n+' Personen leisten gleichzeitig je '+P+' W. Wie gross ist die Gesamtleistung?','W',n*P,'P gesamt = '+n+' · '+P+' W = '+n*P+' W',0.015,[[P,'noadd']]);},
+  ()=>mc('k2-wissen',1,'Wie viel leistet ein Mensch ungefähr bei dauerhafter Arbeit?',['Etwa 100 W','Etwa 1 W','Etwa 10 000 W','Etwa 1 000 000 W'],'Dauerhaft leistet ein Mensch etwa 100 W. Kurz im Sprint kann es über 1000 W sein.',[null,'k-mensch','k-mensch','k-mensch']),
+  ()=>mc('k2-wissen',1,'Welches dieser Geräte hat die grösste Leistung?',['Föhn','LED-Lampe','Handy-Ladegerät','Radiowecker'],'Der Föhn erhitzt Luft und braucht dafür fast 2000 W. Die anderen Geräte brauchen nur wenige Watt.',[null,'k-geraet','k-geraet','k-geraet'])
+ ],
+ 2:[
+  ()=>{const m=rnd([50,60,70,80]),h=rnd([300,400,600,800]),t=rnd([1,2,3]),P=m*10*h/(t*3600);return num('w-std',2,'Eine Wanderin ('+m+' kg) steigt in '+t+(t===1?' Stunde':' Stunden')+' um '+h+' m hoch (g = 10 N/kg). Welche mittlere Leistung bringt sie auf?','W',P,'W = '+m*10+' N · '+h+' m = '+m*10*h+' J, t = '+t*3600+' s, P = '+m*10*h+' J : '+t*3600+' s = '+fmt(P,1)+' W',0.03,[[m*h/(t*3600),'no10'],[m*10*h/t,'std'],[m*10*h,'noT'],[m*10/(t*3600),'noh']]);},
+  ()=>{const P1=rnd([200,300,400]),P2=rnd([100,500,600]),t=rnd([5,10,20]);return num('p-add',2,'Zwei Pumpen mit '+P1+' W und '+P2+' W laufen gemeinsam '+t+' s. Wie viel Arbeit verrichten sie zusammen?','J',(P1+P2)*t,'P gesamt = '+(P1+P2)+' W, W = '+(P1+P2)+' W · '+t+' s = '+(P1+P2)*t+' J',0.015,[[P1*t,'noadd'],[P2*t,'noadd'],[(P1+P2)/t,'div']]);},
+  ()=>{const ps=rnd([10,20,40,100]);return num('p-ps',2,'Ein Motor hat '+ps+' PS (1 PS = 735 W). Welche Leistung hat er in Watt?','W',ps*735,'P = '+ps+' · 735 W = '+fmt(ps*735,0)+' W',0.015,[[ps/735,'inv'],[ps+735,'add']]);},
+  ()=>{const W=rnd([6000,9000,12000,24000]),P=rnd([200,300,500,1000]);return num('t-w',2,'Eine Maschine mit '+P+' W soll '+W+' J Arbeit verrichten. Wie viele Sekunden braucht sie?','s',W/P,'t = W : P = '+W+' J : '+P+' W = '+fmt(W/P,1)+' s',0.015,[[P/W,'inv'],[W*P,'mul']]);},
+  ()=>mc('k2-wissen',2,'Zwei gleich starke Arbeiter schaffen eine Arbeit in 6 Stunden. Wie lange brauchen vier gleich starke Arbeiter?',['3 Stunden','12 Stunden','6 Stunden','1,5 Stunden'],'Vier Arbeiter leisten doppelt so viel wie zwei. Bei gleicher Arbeit brauchen sie die halbe Zeit: 3 Stunden.',[null,'k-umgekehrt','k-umgekehrt','k-halb'])
+ ],
+ 3:[
+  ()=>{const m=rnd([50,60,70]),r=rnd([8,10,15]),h=rnd([400,600,800]),t=rnd([2,3,4]),P=(m+r)*10*h/(t*3600);return num('w-std',3,'Ein Bergsteiger ('+m+' kg) trägt einen Rucksack von '+r+' kg und steigt in '+t+' Stunden um '+h+' m hoch (g = 10 N/kg). Welche mittlere Leistung bringt er auf?','W',P,'Gesamtmasse '+(m+r)+' kg, F = '+(m+r)*10+' N, W = '+(m+r)*10*h+' J, P = '+(m+r)*10*h+' J : '+t*3600+' s = '+fmt(P,1)+' W',0.03,[[m*10*h/(t*3600),'nor'],[(m+r)*h/(t*3600),'no10'],[(m+r)*10*h/t,'std']]);},
+  ()=>{const n=rnd([2,3,4,5]),P=rnd([60,80,100,120]),W=rnd([48000,72000,96000,120000]);return num('p-add',3,n+' Personen leisten gleichzeitig je '+P+' W. Wie viele Sekunden brauchen sie für '+W+' J Arbeit?','s',W/(n*P),'P gesamt = '+n*P+' W, t = '+W+' J : '+n*P+' W = '+fmt(W/(n*P),1)+' s',0.02,[[W/P,'noadd'],[n*P/W,'inv']]);},
+  ()=>{const ps=rnd([20,40,60]),t=rnd([10,20,30]);return num('p-ps',3,'Ein Motor mit '+ps+' PS (1 PS = 735 W) läuft '+t+' s. Wie viel Arbeit verrichtet er in Kilojoule (kJ)?','kJ',ps*735*t/1000,'P = '+fmt(ps*735,0)+' W, W = '+fmt(ps*735,0)+' W · '+t+' s = '+fmt(ps*735*t,0)+' J = '+fmt(ps*735*t/1000,1)+' kJ',0.015,[[ps*735*t,'kj']]);},
+  ()=>mc('k2-wissen',3,'Eine Wanderin braucht für den Aufstieg 3 Stunden, ein Läufer 1 Stunde (gleiche Masse, gleiche Höhe). Wie verhalten sich die Leistungen?',['Der Läufer leistet dreimal so viel.','Beide leisten gleich viel.','Die Wanderin leistet dreimal so viel.','Der Läufer leistet nur einen Drittel.'],'Die Arbeit ist gleich. Der Läufer braucht ein Drittel der Zeit, also ist seine Leistung dreimal so gross.',[null,'m-zeit-leistung','m-zeit-leistung','m-zeit-leistung']),
+  ()=>mc('k2-wissen',3,'Warum kann ein Mensch kurz mehr als 1000 W leisten, aber nicht den ganzen Tag?',['Kurz geht viel Arbeit pro Sekunde, über viele Stunden aber nur wenig.','Weil Watt mit der Zeit abnimmt.','Weil Arbeit nur kurz möglich ist.','Weil der Körper keine Energie hat.'],'Leistung ist Arbeit pro Zeit. Die Kraftreserven reichen für einen kurzen Sprint, aber nicht für viele Stunden.',[null,'k-ausdauer','k-ausdauer','k-ausdauer'])
+ ]
+};
+const GEN3={
+ 1:[
+  ()=>{const P=rnd([100,200,500,1000,2000]),t=rnd([1,2,3,5]);return num('e-kwh2',1,'Ein Gerät mit '+P+' W läuft '+t+' Stunden. Wie viel Energie braucht es in Kilowattstunden (kWh)?','kWh',P/1000*t,'E = '+fmt(P/1000,2)+' kW · '+t+' h = '+fmt(P/1000*t,2)+' kWh',0.015,[[P*t,'kw']]);},
+  ()=>{const E=rnd([1,2,3,4,0.5,1.5,2.5]);return num('k3-kosten',1,'Eine Waschmaschine braucht '+fmt(E,1)+' kWh Energie. 1 kWh kostet 25 Rappen. Wie viele Rappen kostet das?','Rp',E*25,'Kosten = '+fmt(E,1)+' kWh · 25 Rp/kWh = '+fmt(E*25,1)+' Rp',0.015,[[E/25,'div'],[E+25,'add']]);},
+  ()=>{const Z=rnd([100,200,500,1000]),eta=rnd([20,25,40,50,80]),N=Z*eta/100;return num('k3-eta',1,'Ein Gerät nimmt '+Z+' J auf und gibt davon '+N+' J nutzbar ab. Wie gross ist der Wirkungsgrad in Prozent?','%',eta,'η = '+N+' J : '+Z+' J = '+fmt(eta/100,2)+' = '+eta+' %',0.015,[[N/Z,'pct'],[Z/N*100,'inv']]);},
+  ()=>mc('k3-wissen',1,'Was misst die Einheit kWh?',['Energie','Leistung','Kraft','Zeit'],'Kilowattstunde ist Leistung mal Zeit, also eine Energie. 1 kWh = 3 600 000 J.',[null,'k3-kwh-einheit','k3-kwh-einheit','k3-kwh-einheit']),
+  ()=>mc('k3-wissen',1,'Was gibt der Wirkungsgrad an?',['Wie viel der zugeführten Energie genutzt wird','Wie schnell ein Gerät arbeitet','Wie viel Strom ein Gerät kostet','Wie gross die Leistung ist'],'Wirkungsgrad = genutzte Energie : zugeführte Energie.',[null,'k3-eta-wissen','k3-eta-wissen','k3-eta-wissen'])
+ ],
+ 2:[
+  ()=>{const P=rnd([800,1000,1500,1800,2000]),t=rnd([10,15,20,30,45]),E=P/1000*t/60;return num('e-kwh2',2,'Ein Gerät mit '+P+' W läuft '+t+' Minuten. Wie viel Energie braucht es in Kilowattstunden (kWh)?','kWh',E,'E = '+fmt(P/1000,2)+' kW · '+fmt(t/60,3)+' h = '+fmt(E,3)+' kWh',0.02,[[P/1000*t,'minh'],[P*t/60,'kw']]);},
+  ()=>{const P=rnd([1000,1500,2000]),h=rnd([2,3,4]),E=P/1000*h;return num('k3-kosten',2,'Ein Heizlüfter mit '+P+' W läuft '+h+' Stunden. 1 kWh kostet 25 Rappen. Wie viele Rappen kostet das?','Rp',E*25,'E = '+fmt(P/1000,2)+' kW · '+h+' h = '+fmt(E,2)+' kWh, Kosten = '+fmt(E,2)+' kWh · 25 Rp/kWh = '+fmt(E*25,1)+' Rp',0.015,[[E,'nopreis'],[P*h*25,'kw']]);},
+  ()=>{const Z=rnd([200,400,500,1000]),eta=rnd([20,40,60,75,80]),V=Z*(100-eta)/100;return num('k3-eta',2,'Eine Maschine nimmt '+Z+' J Energie auf und gibt '+V+' J als Abwärme ab. Wie gross ist der Wirkungsgrad in Prozent?','%',eta,'Genutzt: '+Z+' J − '+V+' J = '+(Z-V)+' J, η = '+(Z-V)+' J : '+Z+' J = '+eta+' %',0.015,[[V/Z*100,'abw'],[(Z-V)/Z,'pct']]);},
+  ()=>{const Z=rnd([200,400,500,1000]),eta=rnd([20,25,40,50,80]),A=Z*(100-eta)/100;return num('k3-verlust',2,'Ein Gerät nimmt '+Z+' J auf und hat einen Wirkungsgrad von '+eta+' %. Wie viel Energie wird als Abwärme frei (in J)?','J',A,'Genutzt: '+Z*eta/100+' J, Abwärme = '+Z+' J − '+Z*eta/100+' J = '+A+' J',0.015,[[Z*eta/100,'nutz']]);},
+  ()=>mc('k3-wissen',2,'Was bedeutet Energieentwertung?',['Energie wird zu Abwärme, die sich kaum noch nutzen lässt.','Energie verschwindet vollständig.','Energie wird zu mehr Kraft.','Energie verdoppelt sich.'],'Energie geht nie verloren. Bei der Entwertung wird sie zu Abwärme, die kaum noch nutzbar ist.',[null,'k3-erhalt','k3-abwaerme','k3-erhalt'])
+ ],
+ 3:[
+  ()=>{const P=rnd([60,100,150,1800,2000]),t=rnd([20,30,60,90]),K=P/1000*t/60*30*25;return num('k3-kosten',3,'Ein Gerät mit '+P+' W läuft jeden Tag '+t+' Minuten. 1 kWh kostet 25 Rappen. Wie viele Rappen kostet das in 30 Tagen?','Rp',K,'E pro Tag = '+fmt(P/1000,2)+' kW · '+fmt(t/60,3)+' h = '+fmt(P/1000*t/60,3)+' kWh, in 30 Tagen '+fmt(P/1000*t/60*30,2)+' kWh, Kosten = '+fmt(K,1)+' Rp',0.02,[[P/1000*t/60*25,'tage'],[P/1000*t*30*25,'minh'],[P/1000*t/60*30,'nopreis']]);},
+  ()=>{const E=rnd([2,4,5,10]),eta=rnd([60,75,80,90]),N=E*eta/100;return num('k3-eta',3,'Ein Motor mit einem Wirkungsgrad von '+eta+' % nimmt '+E+' kWh Energie auf. Wie viel nutzbare Energie gibt er ab (in kWh)?','kWh',N,'Nutzbar = '+E+' kWh · '+fmt(eta/100,2)+' = '+fmt(N,2)+' kWh',0.015,[[E*eta,'proz'],[E/(eta/100),'inv']]);},
+  ()=>{const N=rnd([100,200,300,500]),eta=rnd([20,25,40,50,80]),Z=N/(eta/100);return num('k3-eta',3,'Ein Gerät mit einem Wirkungsgrad von '+eta+' % soll '+N+' J nutzbar abgeben. Wie viel Energie muss man zuführen (in J)?','J',Z,'Zugeführt = '+N+' J : '+fmt(eta/100,2)+' = '+fmt(Z,1)+' J',0.015,[[N/eta,'proz'],[N*eta/100,'inv']]);},
+  ()=>{const P=rnd([50,100,125,200,250,500,2000]);return num('e-kwh2',3,'Wie viele Stunden darf ein Gerät mit '+P+' W laufen, damit es genau 1 kWh braucht?','h',1000/P,'t = E : P = 1 kWh : '+fmt(P/1000,3)+' kW = '+fmt(1000/P,2)+' h',0.015,[[P/1000,'inv']]);},
+  ()=>mc('k3-wissen',3,'Warum ist eine LED-Lampe effizienter als eine Glühlampe?',['Sie wandelt einen grösseren Teil der Energie in Licht um.','Sie hat eine grössere Leistung.','Sie erzeugt zusätzliche Energie.','Sie wird nie warm.'],'Die LED hat einen höheren Wirkungsgrad. Bei gleicher zugeführter Energie wird mehr zu Licht und weniger zu Wärme.',[null,'k3-led-eta','k3-erhalt','k3-led-eta']),
+  ()=>mc('k3-wissen',3,'Kann der Wirkungsgrad eines Geräts über 100 % liegen?',['Nein, man kann nie mehr Energie nutzen, als man hineinsteckt.','Ja, bei sehr guten Geräten.','Ja, bei Elektromotoren.','Ja, wenn das Gerät kalt bleibt.'],'Der Wirkungsgrad ist genutzte durch zugeführte Energie. Genutzt kann nie mehr sein als zugeführt, also höchstens 100 %.',[null,'k3-eta-100','k3-eta-100','k3-eta-100'])
+ ]
+};
+/* ===== Zusätzliche Aufgaben (nutzen vorhandene Tipps, Fehler- und Auswahl-Hinweise) ===== */
+GEN[1].push(
+ ()=>{const c=rnd(['Du schiebst ein Auto','Ein Pferd zieht einen Wagen','Du ziehst eine Kiste','Ein Arbeiter schiebt eine Schubkarre']),F=rnd([30,40,60,80,120,150,300]),s=rnd([2,3,4,5,6,8,12,15]);return num('w-fs',1,c+' mit einer Kraft von '+F+' N über '+s+' m. Wie viel Arbeit wird verrichtet?','J',F*s,'W = F · s = '+F+' N · '+s+' m = '+F*s+' J',0.015,[[F+s,'add'],[F/s,'div']]);},
+ ()=>{const c=rnd(['Ein Gerät','Ein Motor','Ein Roboter','Eine Pumpe']),P=rnd([15,25,30,40,75,120,250]),t=rnd([3,6,8,12,15,40]),W=P*t;return num('p-wt',1,c+' verrichtet '+W+' J Arbeit in '+t+' s. Wie gross ist die Leistung?','W',P,'P = W : t = '+W+' J : '+t+' s = '+P+' W',0.015,[[W*t,'mul'],[t/W,'inv']]);},
+ ()=>{const c=rnd(['Ein Mixer','Ein Staubsaugermotor','Eine Lampe','Ein Ventilator']),P=rnd([5,15,40,60,80,150,300]),t=rnd([3,4,6,8,12,15]);return num('w-pt',1,c+' mit '+P+' W läuft '+t+' s. Wie viel Arbeit wird verrichtet?','J',P*t,'W = P · t = '+P+' W · '+t+' s = '+P*t+' J',0.015,[[P/t,'div'],[P+t,'add']]);},
+ ()=>mc('einheit',1,'In welcher Einheit misst man die Kraft?',['Newton (N)','Joule (J)','Watt (W)','Meter (m)'],'Kraft misst man in Newton. Joule ist die Einheit der Arbeit, Watt die der Leistung.',[null,'u-joule','u-watt','u-meter']),
+ ()=>mc('einheit',1,'Welche Grösse hat die Einheit Joule?',['Arbeit','Leistung','Kraft','Zeit'],'Arbeit wird in Joule gemessen: 1 J = 1 N · 1 m.',[null,'u-watt','u-newton','u-sekunde']),
+ ()=>mc('einheit',1,'Welche Formel gehört zur Leistung?',['P = W : t','P = W · t','P = t : W','P = F · s'],'Leistung ist Arbeit pro Zeit: P = W : t.',[null,'mul','inv','noT'])
+);
+GEN[2].push(
+ ()=>{const c=rnd(['einen Rucksack','eine Kiste','einen Eimer Wasser','einen Sack Zement']),m=rnd([3,5,10,15,25,30,50]),h=rnd([1,2,3,4,6,8]);return num('w-m',2,'Du hebst '+c+' mit '+m+' kg um '+h+' m an (g = 10 N/kg). Wie gross ist die Arbeit?','J',m*10*h,'F = '+m+' kg · 10 N/kg = '+m*10+' N, W = '+m*10+' N · '+h+' m = '+m*10*h+' J',0.015,[[m*h,'no10'],[m*10,'noh']]);},
+ ()=>{const m=rnd([2,4,5,10,20]),h=rnd([1,2,3]),t=rnd([2,4,5,10]),P=m*10*h/t;return num('p-treppe',2,'Du hebst '+m+' kg in '+t+' s um '+h+' m an (g = 10 N/kg). Welche Leistung bringst du auf?','W',P,'F = '+m*10+' N, W = '+m*10*h+' J, P = '+m*10*h+' J : '+t+' s = '+fmt(P,1)+' W',0.02,[[m*h/t,'no10'],[m*10*h,'noT'],[m*10/t,'noh']]);},
+ ()=>mc('p-gleich',2,'Ein Gerät hat die doppelte Leistung und läuft gleich lang. Wie verändert sich die Arbeit?',['Sie verdoppelt sich.','Sie bleibt gleich.','Sie halbiert sich.','Sie vervierfacht sich.'],'W = P · t. Bei gleicher Zeit und doppelter Leistung wird die Arbeit doppelt so gross.',[null,'m-p-arbeit','m-p-arbeit','m-p-arbeit'])
+);
+GEN[3].push(
+ ()=>{const c=rnd(['Eine Person','Ein Kind','Ein Sportler','Ein Arbeiter']),m=rnd([30,40,55,65,85,90]),h=rnd([2,3,4,5,6,8]),t=rnd([5,7,9,10,14,20]),P=m*10*h/t;return num('p-treppe',3,c+' ('+m+' kg) steigt in '+t+' s eine Treppe mit '+h+' m Höhenunterschied hinauf (g = 10 N/kg). Welche Leistung wird aufgebracht?','W',P,'F = '+m*10+' N, W = '+m*10*h+' J, P = '+m*10*h+' J : '+t+' s = '+fmt(P)+' W',0.02,[[m*h/t,'no10'],[m*10*h,'noT'],[m*10/t,'noh'],[m*10*h*t,'mul']]);},
+ ()=>{const c=rnd(['Ein Kran','Ein Aufzug','Eine Seilwinde']),m=rnd([100,250,400,600,1000]),h=rnd([5,6,10,15,25]),P=rnd([500,1000,2000,2500,5000]),t=m*10*h/P;return num('t-rueck',3,c+' mit einer Leistung von '+P+' W hebt eine Last von '+m+' kg um '+h+' m (g = 10 N/kg). Wie viele Sekunden dauert das?','s',t,'W = '+m*10+' N · '+h+' m = '+m*10*h+' J, t = W : P = '+m*10*h+' J : '+P+' W = '+fmt(t)+' s',0.02,[[P/(m*10*h),'inv'],[m*10*h,'noP'],[m*h/P,'no10']]);},
+ ()=>{const P=rnd([1,2,3,5]),t=rnd([10,20,30,60]);return num('e-kwh',3,'Ein Motor mit '+P+' kW läuft '+t+' s. Wie viel Arbeit verrichtet er in Kilojoule (kJ)?','kJ',P*t,'P = '+P+' kW = '+P*1000+' W, W = '+P*1000+' W · '+t+' s = '+fmt(P*1000*t,0)+' J = '+P*t+' kJ',0.015,[[P*t*1000,'kj']]);},
+ ()=>mc('sprint-mc',3,'Zwei Motoren leisten gleich viel. Motor A läuft doppelt so lang wie Motor B. Was gilt für die Arbeit?',['Motor A verrichtet doppelt so viel Arbeit.','Beide verrichten gleich viel Arbeit.','Motor B verrichtet doppelt so viel Arbeit.','Die Arbeit lässt sich nicht vergleichen.'],'W = P · t. Bei gleicher Leistung ist die Arbeit proportional zur Zeit. Motor A verrichtet doppelt so viel.',[null,'m-p-arbeit','m-p-arbeit','m-p-arbeit'])
+);
+GEN2[1].push(
+ ()=>{const c=rnd(['Ein Förderband','Eine Seilwinde','Ein Rasenmäher','Eine Pumpe']),P=rnd([30,45,70,90,120,180,250]),t=rnd([3,6,8,12,15,25]),W=P*t;return num('p-wt',1,c+' verrichtet '+W+' J Arbeit in '+t+' s. Welche Leistung hat das Gerät?','W',P,'P = W : t = '+W+' J : '+t+' s = '+P+' W',0.015,[[W*t,'mul'],[t/W,'inv']]);},
+ ()=>{const c=rnd(['Ein Wasserkocher','Ein Heizlüfter','Eine Kaffeemaschine','Ein Toaster']),P=rnd([500,800,1000,1200,1500,1800,2000]),t=rnd([2,3,5,10]);return num('w-pt',1,c+' mit '+P+' W läuft '+t+' s. Wie viel Energie wandelt das Gerät um (in J)?','J',P*t,'W = P · t = '+P+' W · '+t+' s = '+fmt(P*t,0)+' J',0.015,[[P/t,'div']]);},
+ ()=>{const c=rnd(['Arbeiter','Helferinnen','Schüler','Pumpen']),n=rnd([2,3,4,5,6]),P=rnd([40,60,75,90,110]);return num('p-add',1,n+' '+c+' leisten gleichzeitig je '+P+' W. Wie gross ist die Gesamtleistung?','W',n*P,'P gesamt = '+n+' · '+P+' W = '+n*P+' W',0.015,[[P,'noadd']]);},
+ ()=>{const ps=rnd([2,3,4,5,8]);return num('p-ps',1,'Ein Mofa hat '+ps+' PS (1 PS = 735 W). Welche Leistung hat es in Watt?','W',ps*735,'P = '+ps+' · 735 W = '+fmt(ps*735,0)+' W',0.015,[[ps/735,'inv'],[ps+735,'add']]);},
+ ()=>{const k=rnd([2,3,5,7,15,70]);return num('e-kwh2',1,'Ein Auto hat eine Leistung von '+k+' kW. Wie viele Watt sind das?','W',k*1000,'1 kW = 1000 W, also '+k+' kW = '+fmt(k*1000,0)+' W',0.015,[[k,'kw']]);},
+ ()=>mc('k2-wissen',1,'Welches Gerät hat die kleinste Leistung?',['Handy-Ladegerät','Föhn','Staubsauger','Backofen'],'Ein Handy-Ladegerät braucht nur etwa 10 W. Geräte, die erhitzen, brauchen viel mehr.',[null,'k-geraet','k-geraet','k-geraet']),
+ ()=>mc('k2-wissen',1,'Wie viel leistet ein Mensch im kurzen Sprint ungefähr?',['Über 1000 W','Etwa 10 W','Etwa 100 W','Etwa 1 W'],'Im kurzen Sprint sind über 1000 W möglich. Dauerhaft sind es nur etwa 100 W.',[null,'k-ausdauer','k-ausdauer','k-ausdauer']),
+ ()=>mc('k2-wissen',1,'Vier Arbeiter brauchen 3 Stunden für eine Arbeit. Wie lange brauchen zwei gleich starke Arbeiter?',['6 Stunden','3 Stunden','1,5 Stunden','12 Stunden'],'Halb so viele Arbeiter leisten halb so viel und brauchen darum doppelt so lang: 6 Stunden.',[null,'k-umgekehrt','k-umgekehrt','k-umgekehrt'])
+);
+GEN2[2].push(
+ ()=>{const c=rnd(['Ein Läufer','Eine Joggerin','Ein Bergläufer']),m=rnd([50,60,65,70,80]),h=rnd([50,100,150,200]),t=rnd([5,10,15,20]),P=m*10*h/(t*60);return num('p-treppe',2,c+' ('+m+' kg) steigt in '+t+' Minuten um '+h+' m hinauf (g = 10 N/kg). Welche mittlere Leistung bringt die Person auf?','W',P,'W = '+m*10+' N · '+h+' m = '+m*10*h+' J, t = '+t*60+' s, P = '+m*10*h+' J : '+t*60+' s = '+fmt(P,1)+' W',0.03,[[m*10*h/t,'min'],[m*h/(t*60),'no10'],[m*10*h,'noT']]);},
+ ()=>{const c=rnd(['Zwei Motoren','Zwei Arbeiter','Zwei Pumpen']),P1=rnd([150,250,350,450]),P2=rnd([80,120,550,650]),t=rnd([4,8,12,25]);return num('p-add',2,c+' mit '+P1+' W und '+P2+' W arbeiten gemeinsam '+t+' s. Wie viel Arbeit verrichten sie zusammen?','J',(P1+P2)*t,'P gesamt = '+(P1+P2)+' W, W = '+(P1+P2)+' W · '+t+' s = '+(P1+P2)*t+' J',0.015,[[P1*t,'noadd'],[P2*t,'noadd'],[(P1+P2)/t,'div']]);},
+ ()=>{const c=rnd(['Ein Kran','Ein Förderband','Eine Winde']),W=rnd([3000,5000,8000,15000,30000]),P=rnd([250,400,600,1500,2000]);return num('t-w',2,c+' mit '+P+' W soll '+W+' J Arbeit verrichten. Wie viele Sekunden dauert das?','s',W/P,'t = W : P = '+W+' J : '+P+' W = '+fmt(W/P,1)+' s',0.015,[[P/W,'inv'],[W*P,'mul']]);},
+ ()=>mc('k2-wissen',2,'Eine Pumpe schafft eine Arbeit in 10 Minuten. Zwei gleiche Pumpen arbeiten zusammen. Wie lange brauchen sie?',['5 Minuten','10 Minuten','20 Minuten','2,5 Minuten'],'Zwei Pumpen leisten doppelt so viel. Bei gleicher Arbeit brauchen sie die halbe Zeit: 5 Minuten.',[null,'k-umgekehrt','k-umgekehrt','k-halb'])
+);
+GEN2[3].push(
+ ()=>{const ps=rnd([20,40,80,100,136,200]),kw=ps*735/1000;return num('p-ps',3,'Ein Motor hat '+ps+' PS (1 PS = 735 W). Welche Leistung hat er in Kilowatt (kW)?','kW',kw,'P = '+ps+' · 735 W = '+fmt(ps*735,0)+' W = '+fmt(kw,2)+' kW',0.015,[[ps*735,'kw']]);},
+ ()=>{const c=rnd(['Ein Bergsteiger','Ein Wanderer']),m=rnd([55,65,75,85]),r=rnd([5,12,18]),h=rnd([300,500,700,1000]),t=rnd([2,3,4,5]),P=(m+r)*10*h/(t*3600);return num('w-std',3,c+' ('+m+' kg) trägt einen Rucksack von '+r+' kg und steigt in '+t+' Stunden um '+h+' m hoch (g = 10 N/kg). Welche mittlere Leistung bringt er auf?','W',P,'Gesamtmasse '+(m+r)+' kg, F = '+(m+r)*10+' N, W = '+(m+r)*10*h+' J, P = '+(m+r)*10*h+' J : '+t*3600+' s = '+fmt(P,1)+' W',0.03,[[m*10*h/(t*3600),'nor'],[(m+r)*h/(t*3600),'no10'],[(m+r)*10*h/t,'std']]);},
+ ()=>mc('k2-wissen',3,'Zwei Pumpen mit gleicher Leistung arbeiten gemeinsam. Was gilt für die Zeit bei gleicher Arbeit?',['Sie brauchen die halbe Zeit.','Sie brauchen gleich lang.','Sie brauchen doppelt so lang.','Sie brauchen viermal so lang.'],'Zusammen leisten sie doppelt so viel. Bei gleicher Arbeit brauchen sie die halbe Zeit.',[null,'k-umgekehrt','k-umgekehrt','k-umgekehrt'])
+);
+GEN3[1].push(
+ ()=>{const c=rnd(['Ein Heizlüfter','Ein Fernseher','Eine Waschmaschine','Ein Backofen','Ein Staubsauger']),P=rnd([60,100,200,500,800,1000,1500,2000]),t=rnd([1,2,3,4,5,6,8,10]);return num('e-kwh2',1,c+' hat eine Leistung von '+P+' W und läuft '+t+' Stunden. Wie viel Energie braucht das Gerät in Kilowattstunden (kWh)?','kWh',P/1000*t,'E = '+fmt(P/1000,3)+' kW · '+t+' h = '+fmt(P/1000*t,3)+' kWh',0.015,[[P*t,'kw']]);},
+ ()=>{const price=rnd([20,25,30]),E=rnd([0.5,1,1.5,2,3,4,5]);return num('k3-kosten',1,'Ein Gerät braucht '+fmt(E,1)+' kWh Energie. 1 kWh kostet '+price+' Rappen. Wie viele Rappen kostet das?','Rp',E*price,'Kosten = '+fmt(E,1)+' kWh · '+price+' Rp/kWh = '+fmt(E*price,1)+' Rp',0.015,[[E/price,'div'],[E+price,'add']]);},
+ ()=>{const c=rnd(['Ein Motor','Ein Heizgerät','Eine Lampe','Eine Maschine']),Z=rnd([100,200,400,500,800,1000]),eta=rnd([10,15,30,45,60,70,75,90]),N=Z*eta/100;return num('k3-eta',1,c+' nimmt '+Z+' J auf und gibt davon '+N+' J nutzbar ab. Wie gross ist der Wirkungsgrad in Prozent?','%',eta,'η = '+N+' J : '+Z+' J = '+fmt(eta/100,2)+' = '+eta+' %',0.015,[[N/Z,'pct'],[Z/N*100,'inv']]);},
+ ()=>{const P=rnd([200,500,750,1500,2500,3000,4500]);return num('e-kwh2',1,'Ein Gerät hat eine Leistung von '+P+' W. Wie viele Kilowatt sind das?','kW',P/1000,'1000 W = 1 kW, also '+P+' W = '+fmt(P/1000,3)+' kW',0.015,[[P,'kw']]);},
+ ()=>mc('k3-wissen',1,'Welche Einheit passt zur Energie im Haushalt?',['kWh','kW','W','N'],'Im Haushalt misst man Energie in Kilowattstunden (kWh).',[null,'k3-kwh-einheit','k3-kwh-einheit','u-newton']),
+ ()=>mc('k3-wissen',1,'Welche Aussage über Energie stimmt?',['Energie geht nie verloren, sie wird umgewandelt.','Energie wird verbraucht und ist dann weg.','Energie entsteht in der Steckdose.','Energie kann sich verdoppeln.'],'Energie bleibt erhalten. Sie wird nur in andere Formen umgewandelt.',[null,'k3-erhalt','k3-erhalt','k3-erhalt'])
+);
+GEN3[2].push(
+ ()=>{const c=rnd(['Ein Föhn','Ein Toaster','Ein Wasserkocher','Eine Kaffeemaschine','Ein Heizlüfter']),P=rnd([600,800,1000,1200,1500,1800,2000]),t=rnd([6,12,15,20,24,30,40,45]),E=P/1000*t/60;return num('e-kwh2',2,c+' hat eine Leistung von '+P+' W und läuft '+t+' Minuten. Wie viel Energie braucht das Gerät in Kilowattstunden (kWh)?','kWh',E,'E = '+fmt(P/1000,2)+' kW · '+fmt(t/60,3)+' h = '+fmt(E,3)+' kWh',0.02,[[P/1000*t,'minh'],[P*t/60,'kw']]);},
+ ()=>{const price=rnd([20,25,30]),P=rnd([800,1000,1500,2000]),h=rnd([2,3,4,5,6]),E=P/1000*h;return num('k3-kosten',2,'Ein Gerät mit '+P+' W läuft '+h+' Stunden. 1 kWh kostet '+price+' Rappen. Wie viele Rappen kostet das?','Rp',E*price,'E = '+fmt(P/1000,2)+' kW · '+h+' h = '+fmt(E,2)+' kWh, Kosten = '+fmt(E,2)+' kWh · '+price+' Rp/kWh = '+fmt(E*price,1)+' Rp',0.015,[[E,'nopreis'],[P*h*price,'kw']]);},
+ ()=>{const c=rnd(['Eine Maschine','Ein Motor','Ein Heizkessel']),Z=rnd([200,400,500,800,1000]),eta=rnd([25,30,35,45,55,65,70,85]),V=Z*(100-eta)/100;return num('k3-eta',2,c+' nimmt '+Z+' J Energie auf und gibt '+V+' J als Abwärme ab. Wie gross ist der Wirkungsgrad in Prozent?','%',eta,'Genutzt: '+Z+' J − '+V+' J = '+(Z-V)+' J, η = '+(Z-V)+' J : '+Z+' J = '+eta+' %',0.015,[[V/Z*100,'abw'],[(Z-V)/Z,'pct']]);},
+ ()=>{const c=rnd(['Ein Gerät','Ein Motor','Eine Maschine']),Z=rnd([200,400,500,800,1000]),eta=rnd([20,30,35,45,60,75,90]),A=Z*(100-eta)/100;return num('k3-verlust',2,c+' nimmt '+Z+' J auf und hat einen Wirkungsgrad von '+eta+' %. Wie viel Energie wird als Abwärme frei (in J)?','J',A,'Genutzt: '+Z*eta/100+' J, Abwärme = '+Z+' J − '+Z*eta/100+' J = '+A+' J',0.015,[[Z*eta/100,'nutz']]);},
+ ()=>{const P1=rnd([100,200,500,1000,1500]),P2=rnd([10,40,60,80]),t=rnd([2,4,5,10]),E=(P1-P2)/1000*t;return num('e-kwh2',2,'Gerät A hat '+P1+' W, Gerät B hat '+P2+' W. Beide laufen '+t+' Stunden. Wie viel mehr Energie braucht Gerät A in kWh?','kWh',E,'Unterschied '+(P1-P2)+' W = '+fmt((P1-P2)/1000,3)+' kW, E = '+fmt((P1-P2)/1000,3)+' kW · '+t+' h = '+fmt(E,3)+' kWh',0.015,[[(P1-P2)*t,'kw']]);},
+ ()=>mc('k3-wissen',2,'Ein Gerät hat einen Wirkungsgrad von 40 %. Was passiert mit den restlichen 60 %?',['Sie werden zu Abwärme.','Sie verschwinden.','Sie werden gespeichert.','Sie werden zu Kraft.'],'Die restlichen 60 % werden zu Abwärme. Energie geht nicht verloren, aber die Abwärme lässt sich kaum noch nutzen.',[null,'k3-erhalt','k3-abwaerme','k3-abwaerme'])
+);
+GEN3[3].push(
+ ()=>{const c=rnd(['Ein Radio','Eine Lampe','Eine Maschine','Ein Fernseher']),P=rnd([15,25,40,60,100,150,500,1800,2000]),t=rnd([10,15,20,30,45,60,90,120]),d=rnd([7,14,20,30]),K=P/1000*t/60*d*25;return num('k3-kosten',3,c+' mit '+P+' W läuft jeden Tag '+t+' Minuten. 1 kWh kostet 25 Rappen. Wie viele Rappen kostet das in '+d+' Tagen?','Rp',K,'E pro Tag = '+fmt(P/1000,3)+' kW · '+fmt(t/60,3)+' h = '+fmt(P/1000*t/60,3)+' kWh, in '+d+' Tagen '+fmt(P/1000*t/60*d,3)+' kWh, Kosten = '+fmt(K,2)+' Rp',0.02,[[P/1000*t/60*25,'tage'],[P/1000*t*d*25,'minh'],[P/1000*t/60*d,'nopreis']]);},
+ ()=>{const pr=rnd([[60,8],[75,10],[100,15],[40,5],[60,10]]),t=rnd([100,200,500,1000]),dP=pr[0]-pr[1],E=dP/1000*t;return num('e-kwh2',3,'Eine Glühlampe ('+pr[0]+' W) wird durch eine LED-Lampe ('+pr[1]+' W) mit gleicher Helligkeit ersetzt. Wie viele kWh werden in '+t+' Betriebsstunden gespart?','kWh',E,'Unterschied '+dP+' W = '+fmt(dP/1000,3)+' kW, E = '+fmt(dP/1000,3)+' kW · '+t+' h = '+fmt(E,2)+' kWh',0.015,[[dP*t,'kw']]);},
+ ()=>{const c=rnd(['Ein Kraftwerk','Ein Elektromotor','Ein Benzinmotor','Ein Heizkessel']),Z=rnd([200,400,500,800,1000,2000]),eta=rnd([25,30,35,40,45,60,90]),N=Z*eta/100;return num('k3-eta',3,c+' nimmt '+Z+' kWh Energie auf und hat einen Wirkungsgrad von '+eta+' %. Wie viel nutzbare Energie entsteht (in kWh)?','kWh',N,'Nutzbar = '+Z+' kWh · '+fmt(eta/100,2)+' = '+fmt(N,1)+' kWh',0.015,[[Z*eta,'proz'],[Z/(eta/100),'inv']]);},
+ ()=>mc('k3-wissen',3,'Ein Heizkessel hat einen Wirkungsgrad von 90 %. Wo bleiben die restlichen 10 %?',['Sie werden zu Abwärme, die kaum noch nutzbar ist.','Sie verschwinden.','Sie werden zusätzlich zu Strom.','Sie werden zu Kraft.'],'Die restlichen 10 % werden zu Abwärme. Die Energie bleibt erhalten, ist aber kaum noch nutzbar.',[null,'k3-erhalt','k3-erhalt','k3-abwaerme']),
+ ()=>mc('k3-wissen',3,'Gerät A hat 80 % Wirkungsgrad, Gerät B nur 40 %. Beide sollen gleich viel nutzbare Energie liefern. Was gilt?',['Gerät B braucht doppelt so viel zugeführte Energie.','Beide brauchen gleich viel zugeführte Energie.','Gerät A braucht doppelt so viel zugeführte Energie.','Gerät B braucht halb so viel zugeführte Energie.'],'Gerät B nutzt nur die Hälfte der zugeführten Energie. Darum muss man ihm doppelt so viel zuführen.',[null,'k3-led-eta','k3-led-eta','k3-led-eta'])
+);
+
+const GENS={k1:GEN,k2:GEN2,k3:GEN3};
+const CHS={
+ k1:{id:'k1',num:1,title:'Von der Arbeit zur Leistung',sub:'W = F · s und P = W : t',desc:'Lernen mit Vorhersage, Treppensprint und Üben.',expDone:'Sprint gemessen.',expOpen:'Sprint offen.',color:'var(--pop-pink)',cards:CARDS_K1},
+ k2:{id:'k2',num:2,title:'Leistung im Alltag',sub:'Wanderer, Teams, Geräte',desc:'Mensch und Maschine im Vergleich, mit Geräte-Ordnen.',expDone:'Geräte geordnet.',expOpen:'Geräte-Ordnen offen.',color:'var(--pop-cyan)',cards:CARDS_K2},
+ k3:{id:'k3',num:3,title:'Energie und Wirkungsgrad',sub:'kWh, Kosten, Energieentwertung',desc:'Vom Strompreis bis zur Abwärme, mit Energie-Detektiv.',expDone:'Energie-Detektiv gelöst.',expOpen:'Energie-Detektiv offen.',color:'var(--pop-green)',cards:CARDS_K3}
+};
+let CARDS=CARDS_K1;
 function nextQuestion(){
-  const recent=S.recentQ||[];let q=null;
+  const recent=S.recentQ||[],pool=GENS[ui.k][AD().niv];let q=null;
   for(let i=0;i<60&&!q;i++){
-    const c=rnd(GEN[S.niv])();
+    const c=rnd(pool)();
     if(recent.indexOf(c.q)>=0)continue;
     if(ui.lastTopic&&c.topic===ui.lastTopic&&i<30)continue;
     q=c;
   }
-  if(!q)q=rnd(GEN[S.niv])();
+  if(!q)q=rnd(pool)();
   ui.lastTopic=q.topic;
-  S.recentQ=recent.concat([q.q]).slice(-40);
+  S.recentQ=recent.concat([q.q]).slice(-60);
   if(q.kind==='mc')q.shown=shuffle(q.opts.map((t,i)=>({t,ok:i===0,h:(q.hints&&q.hints[i])||null})));
   return q;
 }
 function record(ok){
-  S.hist.push(ok?1:0);
-  S.log.push({n:S.niv,ok:ok?1:0});if(S.log.length>300)S.log.shift();
-  if(S.hist.length>=6){
-    const sum=S.hist.slice(-6).reduce((a,b)=>a+b,0);
-    if(sum===6&&S.niv<3){S.niv++;S.hist=[];}
-    else if(sum<=3&&S.niv>1){S.niv--;S.hist=[];}
-    else if(S.hist.length>8)S.hist=S.hist.slice(-8);
+  const A=AD();
+  A.hist.push(ok?1:0);
+  S.log.push({n:A.niv,k:ui.k,ok:ok?1:0});if(S.log.length>300)S.log.shift();
+  if(A.hist.length>=6){
+    const sum=A.hist.slice(-6).reduce((a,b)=>a+b,0);
+    if(sum===6&&A.niv<3){A.niv++;A.hist=[];}
+    else if(sum<=3&&A.niv>1){A.niv--;A.hist=[];}
+    else if(A.hist.length>8)A.hist=A.hist.slice(-8);
   }
 }
 
 /* ---------- Speicher ---------- */
 const KEY='halingen-leistung-proto-v1';
-const defaults=()=>({xp:0,niv:1,hist:[],log:[],seen:{},lesson:false,sprint:null,rounds:0,recentQ:[],errs:{},nick:rnd(['Blitz','Funke','Turbo','Watt','Joule','Volt'])+'-'+rnd(['Fuchs','Adler','Luchs','Falke','Dachs','Otter'])});
+const mkCh=()=>({seen:{},lesson:false,exp:false,rounds:0});
+const mkAd=()=>({niv:1,hist:[]});
+const defaults=()=>({xp:0,log:[],sprint:null,rounds:0,recentQ:[],errs:{},chs:{k1:mkCh(),k2:mkCh(),k3:mkCh()},ad:{k1:mkAd(),k2:mkAd(),k3:mkAd()},nick:rnd(['Blitz','Funke','Turbo','Watt','Joule','Volt'])+'-'+rnd(['Fuchs','Adler','Luchs','Falke','Dachs','Otter'])});
 let S;
-try{S=Object.assign(defaults(),JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){S=defaults();}
+try{
+  const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+  S=Object.assign(defaults(),saved);
+  if(!saved.chs){S.chs=S.chs||{};S.chs.k1={seen:saved.seen||{},lesson:!!saved.lesson,exp:!!saved.sprint,rounds:saved.rounds||0};}
+  if(!saved.ad){S.ad=S.ad||{};S.ad.k1={niv:saved.niv||1,hist:saved.hist||[]};}
+  ['k1','k2','k3'].forEach(k=>{S.chs[k]=Object.assign(mkCh(),S.chs[k]||{});S.ad[k]=Object.assign(mkAd(),S.ad[k]||{});});
+}catch(e){S=defaults();}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
 const bump=n=>{S.xp+=n;};
+const CS=k=>S.chs[k||ui.k];
+const AD=()=>S.ad[ui.k];
 const LEVELS=[[0,'Feder'],[80,'Hebel'],[200,'Rampe'],[380,'Flaschenzug'],[620,'Kran'],[920,'Newton']];
 const levelOf=x=>{let l=0;LEVELS.forEach((v,i)=>{if(x>=v[0])l=i;});return l;};
 
@@ -2662,33 +2802,41 @@ async function playSeq(items){
   for(const it of items){if(my!==tok)return;await playClip(it.id,it.text,it.kind,my);}
   if(my===tok)talk(false);
 }
-function cardAudio(i,mode){
-  const c=CARDS[i];
-  if(mode==='vorlesen')return [{id:reg('k1-c'+i+'-w','w',c.w),text:c.w,kind:'w'}];
-  return c.p.map((l,j)=>({id:reg('k1-c'+i+'-p'+j,l[0],l[1]),text:l[1],kind:l[0]}));
+function cardAudio(i,mode,k){
+  k=k||ui.k;const c=CHS[k].cards[i];
+  if(mode==='vorlesen')return [{id:reg(k+'-c'+i+'-w','w',c.w),text:c.w,kind:'w'}];
+  return c.p.map((l,j)=>({id:reg(k+'-c'+i+'-p'+j,l[0],l[1]),text:l[1],kind:l[0]}));
 }
-CARDS.forEach((c,i)=>{cardAudio(i,'vorlesen');cardAudio(i,'podcast');});
+Object.keys(CHS).forEach(k=>CHS[k].cards.forEach((c,i)=>{cardAudio(i,'vorlesen',k);cardAudio(i,'podcast',k);}));
 
 /* ---------- Ansicht ---------- */
-let ui={screen:'home',ci:0,mode:{},pick:{},wk:{},sp:{est:null,m:60,st:22,run:false,t0:0,t:null},R:null,lastTopic:null,hint:false};
+let ui={screen:'home',k:'k1',rk:null,kw:{dev:2,min:30},ci:0,mode:{},pick:{},wk:{},sp:{est:null,m:60,st:22,run:false,t0:0,t:null},R:null,lastTopic:null,hint:false};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 const watti=(lvl,mood,cls)=>'<div class="watti '+(cls||'')+'" data-mood="'+(mood||'happy')+'" style="--lvl:'+Math.max(14,Math.min(100,Math.round(lvl)))+'%" aria-hidden="true"><div class="cap"></div><div class="body"><div class="fill"></div><div class="face"><div class="eyes"><i class="eye"></i><i class="eye"></i></div><b class="mouth"></b></div></div></div>';
-const teacherChip=()=>IS_T()?'<span class="chip">Lehrer-Ansicht · Niveau '+S.niv+' von 3</span>':'';
-const allSeen=()=>CARDS.every((c,i)=>S.seen[i]);
-const canPractice=()=>allSeen()&&!!S.sprint;
+const teacherChip=()=>IS_T()?'<span class="chip">Lehrer-Ansicht · Niveau '+(ui.screen==='home'?['k1','k2','k3'].map(k=>S.ad[k].niv).join(' / ')+' (Kap. 1/2/3)':AD().niv+' von 3')+'</span>':'';
+const allSeenK=k=>CHS[k].cards.every((c,i)=>CS(k).seen[i]);
+const canPracticeK=k=>allSeenK(k)&&!!CS(k).exp;
+const allSeen=()=>allSeenK(ui.k);
+const canPractice=()=>canPracticeK(ui.k);
+const setCh=k=>{ui.k=k;CARDS=CHS[k].cards;};
+const K=i=>ui.k+'-'+i;
+const chDone=k=>CS(k).lesson&&CS(k).rounds>=1;
+const unlocked=k=>IS_T()||k==='k1'||chDone(k==='k2'?'k1':'k2');
+function chapCard(k){
+  const c=CHS[k],st=CS(k),can=canPracticeK(k);
+  if(!unlocked(k))return '<article class="card chap locked" style="--sc:'+c.color+'"><div class="num" aria-hidden="true">'+c.num+'</div><div><h3>'+c.title+'</h3><p class="sub">'+c.sub+'</p><p class="small">Schaltet frei, wenn du Kapitel '+(c.num-1)+' gelernt und einmal geübt hast.</p></div></article>';
+  return '<article class="card chap" style="--sc:'+c.color+'"><div class="num" aria-hidden="true">'+c.num+'</div><div><h3>'+c.title+'</h3><p class="sub">'+c.sub+'</p><p class="small">'+c.desc+' '+(allSeenK(k)?'Karten gelesen. ':'')+(st.exp?c.expDone:c.expOpen)+'</p></div>'+
+  '<div class="acts"><button class="btn btn-primary" data-act="learn" data-k="'+k+'">Lernen</button><button class="btn" data-act="practice" data-k="'+k+'" '+(can?'':'disabled')+'>Üben</button></div>'+
+  (can?'':'<p class="small" style="grid-column:1/-1">Üben schaltet frei, wenn du alle Karten gesehen und die Mitmach-Aufgabe gemacht hast.</p>')+'</article>';
+}
 
 function viewHome(){
   const lv=levelOf(S.xp),nx=LEVELS[lv+1],pct=nx?Math.round((S.xp-LEVELS[lv][0])/(nx[0]-LEVELS[lv][0])*100):100;
-  const learned=allSeen(),sp=!!S.sprint;
   return '<header class="top"><div class="hero"><div><h1>Leistung</h1><p class="lead">Arbeit, Zeit und Watt</p>'+teacherChip()+'</div>'+watti(pct,'happy','big')+'</div>'+
   '<div class="stats"><div class="stat"><span class="k">Stufe '+(lv+1)+'</span><span class="v">'+LEVELS[lv][1]+'</span></div><div class="stat"><span class="k">Punkte</span><span class="v mono">'+S.xp+' XP</span></div><div class="stat"><span class="k">Runden</span><span class="v mono">'+S.rounds+'</span></div></div>'+
   '<div class="bar"><div style="width:'+pct+'%"></div></div></header>'+
   '<main class="wrap"><div class="path">'+
-  '<article class="card chap" style="--sc:var(--pop-pink)"><div class="num" aria-hidden="true">1</div><div><h3>Von der Arbeit zur Leistung</h3><p class="sub">W = F · s und P = W : t</p><p class="small">Lernen mit Vorhersage, Treppensprint und Üben. '+(learned?'Karten gelesen. ':'')+(sp?'Sprint gemessen.':'Sprint offen.')+'</p></div>'+
-  '<div class="acts"><button class="btn btn-primary" data-act="learn">Lernen</button><button class="btn" data-act="practice" '+(canPractice()?'':'disabled')+'>Üben</button></div>'+
-  (canPractice()?'':'<p class="small" style="grid-column:1/-1">Üben schaltet frei, wenn du alle Karten gesehen und den Treppensprint gemacht hast.</p>')+'</article>'+
-  '<article class="card chap locked" style="--sc:var(--pop-cyan)"><div class="num" aria-hidden="true">2</div><div><h3>Leistung im Alltag</h3><p class="sub">Wanderer, Arbeiterinnen, Geräte</p><p class="small">Kommt als Nächstes.</p></div></article>'+
-  '<article class="card chap locked" style="--sc:var(--pop-green)"><div class="num" aria-hidden="true">3</div><div><h3>Energie und Wirkungsgrad</h3><p class="sub">kWh, Energieentwertung</p><p class="small">Kommt als Nächstes.</p></div></article>'+
+  ['k1','k2','k3'].map(chapCard).join('')+
   '<article class="card review"><h3 class="lh">Lernstand</h3><p class="small">Zeige diesen QR-Code deiner Lehrperson. Er ist verschlüsselt, nur sie kann ihn lesen.</p><button class="btn block" data-act="code">'+(ui.code?'Neuen Code erzeugen':'QR-Code anzeigen')+'</button>'+(ui.codeErr?'<p class="note small">'+ui.codeErr+'</p>':'')+(ui.qr?'<div class="qrbox" role="img" aria-label="QR-Code mit deinem Lernstand">'+ui.qr+'</div>':'')+(ui.code?'<p class="small" style="margin-top:12px">Falls das Scannen nicht klappt, kopiere den Text:</p><div class="codebox">'+esc(ui.code)+'</div>':'')+
   (IS_T()?'<button class="btn block" data-act="cliplist">Audio-Liste kopieren (Plazma)</button><p class="small" id="cpmsg"></p>':'')+'</article>'+
   '</div><p class="small" style="margin-top:24px">Dein Fortschritt liegt nur auf diesem Gerät. Zufallsname: <span class="mono b">'+S.nick+'</span></p>'+
@@ -2696,12 +2844,48 @@ function viewHome(){
 }
 
 function audioPanel(i){
-  const mode=ui.mode[i]||'lesen',c=CARDS[i];
+  const mode=ui.mode[K(i)]||'lesen',c=CARDS[i];
   const seg=[['lesen','Lesen'],['vorlesen','Vorlesen'],['podcast','Podcast']].map(x=>'<button class="btn sm'+(mode===x[0]?' on':'')+'" data-act="mode" data-m="'+x[0]+'">'+x[1]+'</button>').join('');
   let extra='';
   if(mode==='vorlesen')extra='<button class="btn sm" id="plbtn" data-act="play">▶ Watti liest vor</button>';
   if(mode==='podcast')extra='<button class="btn sm" id="plbtn" data-act="play">▶ Podcast hören</button><ul class="script">'+c.p.map(l=>'<li class="'+l[0]+'"><b>'+(l[0]==='m'?'Moderator':'Co-Moderatorin')+'</b><br>'+l[1]+'</li>').join('')+'</ul>';
   return '<div class="audio"><span class="tag">So möchtest du es haben</span><div class="seg3" role="group" aria-label="Darstellung">'+seg+'</div>'+extra+'</div>';
+}
+
+/* ---------- Mitmach-Aufgaben Kapitel 2 und 3 ---------- */
+const RK_POOL=[['Handy-Ladegerät',10],['Laptop-Ladegerät',65],['Fernseher',120],['Staubsauger',800],['Föhn',1800],['Backofen',3000]];
+function newRank(){return {items:shuffle(RK_POOL).slice(0,4).map(x=>({n:x[0],w:x[1]})),order:[],done:false};}
+function rankCard(){
+  const r=ui.rk||(ui.rk=newRank());
+  let html='<div class="sim"><p class="small">Tippe zuerst das Gerät mit der kleinsten Leistung an, dann das nächstgrössere, und am Schluss das mit der grössten.</p>';
+  if(!r.done){
+    html+='<div class="opts" style="margin-top:12px">'+r.items.map((it,i)=>{const pos=r.order.indexOf(i);return '<button class="opt" data-act="rk" data-i="'+i+'" '+(pos>=0?'disabled':'')+'><span class="ltr">'+(pos>=0?pos+1:'?')+'</span><span>'+it.n+'</span></button>';}).join('')+'</div>';
+    if(r.order.length)html+='<button class="btn sm block" data-act="rkundo">Letzten Tipp zurücknehmen</button>';
+  }else{
+    const sorted=r.items.map((x,i)=>i).sort((a,b)=>r.items[a].w-r.items[b].w);let hits=0;
+    html+='<ol class="wsteps">'+sorted.map((idx,pos)=>{const it=r.items[idx],ok=r.order[pos]===idx;if(ok)hits++;return '<li><div class="wt">'+(pos+1)+'. '+it.n+': '+fmt(it.w,0)+' W</div><div class="wm">'+(ok?'An der richtigen Stelle.':'Du hattest es an Platz '+(r.order.indexOf(idx)+1)+' gesetzt.')+'</div></li>';}).join('')+'</ol>'+
+    '<p class="readout">'+hits+' von 4 an der richtigen Stelle. Geräte, die etwas erhitzen, brauchen meist am meisten Leistung.</p><button class="btn block" data-act="rkagain">Nochmals mit anderen Geräten</button>';
+  }
+  return html+'</div>';
+}
+const KW_DEV=[['LED-Lampe',10],['Fernseher',100],['Föhn',1800],['Wasserkocher',2000]];
+function kwCalc(){const d=KW_DEV[ui.kw.dev],m=ui.kw.min,E=d[1]/1000*m/60;return {d:d,m:m,E:E,Rp:E*25};}
+function kwTime(m){const h=Math.floor(m/60),r=m%60;return ((h?h+' h ':'')+(r?r+' min':(h?'':'0 min'))).trim();}
+function kwDoneMsg(){const P=KW_DEV[ui.kw.dev][1];return 'Geschafft! Mit '+P+' W dauert eine Kilowattstunde genau '+kwTime(Math.round(60000/P))+'. Die Rechnung: E = P · t.';}
+function kwhCard(){
+  const c=kwCalc(),done=!!CS().exp;
+  return '<div class="sim"><p class="small">Aufgabe: Stelle ein Gerät und eine Dauer so ein, dass ungefähr <b>1 kWh</b> verbraucht wird (0,9 bis 1,1 kWh). Überlege zuerst, bevor du den Regler schiebst.</p><div class="seg3" role="group" aria-label="Gerät">'+
+  KW_DEV.map((d,i)=>'<button class="btn sm'+(ui.kw.dev===i?' on':'')+'" data-act="kwdev" data-i="'+i+'">'+d[0]+'<br>'+d[1]+' W</button>').join('')+'</div>'+
+  '<label class="sl"><span class="sll">Dauer: <b class="mono" id="kwt">'+kwTime(c.m)+'</b></span><input type="range" id="kwr" min="5" max="1440" step="5" value="'+c.m+'"></label>'+
+  '<div class="trio"><div><span class="k">Leistung</span><b class="mono">'+fmt(c.d[1]/1000,2)+' kW</b></div><div><span class="k">Energie</span><b class="mono" id="kwe">'+fmt(c.E,2)+' kWh</b></div><div><span class="k">Kosten</span><b class="mono" id="kwc">'+fmt(c.Rp,1)+' Rp</b></div></div>'+
+  '<p class="readout" id="kwm">'+(done?kwDoneMsg():'Preis: 25 Rappen pro kWh. Noch nicht im Bereich.')+'</p></div>';
+}
+function kwUpdate(){
+  const c=kwCalc(),set=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  set('kwt',kwTime(c.m));set('kwe',fmt(c.E,2)+' kWh');set('kwc',fmt(c.Rp,1)+' Rp');
+  const ok=c.E>=0.9&&c.E<=1.1;
+  if(ok&&!CS().exp){CS().exp=true;CS().seen[ui.ci]=true;bump(10);save();const nb=document.querySelector('[data-act="lfinish"],[data-act="lnext"]');if(nb)nb.disabled=false;}
+  set('kwm',ok?kwDoneMsg():(c.E<0.9?(ui.kw.dev===0?'Die LED-Lampe ist sehr sparsam. Probiere ein anderes Gerät.':'Noch zu wenig Energie. Wähle eine längere Dauer.'):'Zu viel Energie. Verkürze die Dauer.'));
 }
 
 function sprintCard(){
@@ -2729,20 +2913,20 @@ function viewLesson(){
   const i=ui.ci,c=CARDS[i],n=CARDS.length,last=i===n-1;
   let body='';
   if(c.type==='predict'){
-    const sel=ui.pick[i];
+    const sel=ui.pick[K(i)];
     body='<h3 class="q">'+c.q+'</h3><div class="opts">'+c.opts.map((o,k)=>{
       let cls='opt';if(sel!==undefined){if(k===c.ok)cls+=' good';else if(k===sel)cls+=' bad';}
       return '<button class="'+cls+'" data-act="pred" data-i="'+k+'" '+(sel!==undefined?'disabled':'')+'><span class="ltr">'+'ABCD'[k]+'</span><span>'+o+'</span></button>';}).join('')+'</div>'+
       (sel!==undefined?'<div class="fb '+(sel===c.ok?'good':'warn')+'"><div class="fbt">'+(sel===c.ok?'Gut gedacht.':'Spannend, dass du das gedacht hast.')+'</div><div class="fbb">'+c.expl+'</div></div>':'<p class="small" style="margin-top:12px">Weiter geht es, sobald du getippt hast.</p>');
   }else if(c.type==='worked'){
-    const shown=ui.wk[i]||0;
+    const shown=ui.wk[K(i)]||0;
     body='<div class="worked"><div class="wt">'+c.given+'</div><ol class="wsteps">'+c.steps.map((s,k)=>'<li class="'+(k<=shown?'':'hid')+'"><div class="wt">'+s[0]+'</div><div class="wm">'+s[1]+'</div></li>').join('')+'</ol><button class="btn sm" data-act="wstep" '+(shown>=c.steps.length-1?'disabled':'')+'>'+(shown>=c.steps.length-1?'Das war es':'Nächster Schritt')+'</button></div>';
-  }else if(c.type==='sprint'){body=sprintCard();}
+  }else if(c.type==='sprint'){body=sprintCard();}else if(c.type==='rank'){body=rankCard();}else if(c.type==='kwh'){body=kwhCard();}
   else body='<div class="lbody">'+c.body+'</div>';
-  const canNext=c.type==='predict'?ui.pick[i]!==undefined:c.type==='sprint'?!!S.sprint:true;
+  const canNext=c.type==='predict'?ui.pick[K(i)]!==undefined:(c.type==='sprint'||c.type==='rank'||c.type==='kwh')?!!CS().exp:true;
   const dots=CARDS.map((_,k)=>'<span class="dot'+(k<=i?' on':'')+'"></span>').join('');
   return '<main class="wrap"><div class="row"><button class="btn sm" data-act="home">Zum Lernpfad</button><span class="mono small">Karte '+(i+1)+' von '+n+'</span></div><div class="dots" role="progressbar" aria-valuemin="1" aria-valuemax="'+n+'" aria-valuenow="'+(i+1)+'">'+dots+'</div>'+
-  '<section class="card qcard" style="--sc:var(--pop-pink);position:relative"><h2 class="lh" style="margin-bottom:12px">'+c.h+'</h2>'+body+audioPanel(i)+'</section>'+
+  '<section class="card qcard" style="--sc:'+CHS[ui.k].color+';position:relative"><h2 class="lh" style="margin-bottom:12px">'+c.h+'</h2>'+body+audioPanel(i)+'</section>'+
   '<div class="navrow"><button class="btn" data-act="lprev" '+(i===0?'disabled':'')+'>Zurück</button><button class="btn btn-primary" data-act="'+(last?'lfinish':'lnext')+'" '+(canNext?'':'disabled')+'>'+(last?'Lektion abschliessen':'Weiter')+'</button></div></main>';
 }
 
@@ -2771,7 +2955,7 @@ function viewSummary(){
   const R=ui.R,lv=LEVELS[levelOf(S.xp)];
   return '<main class="wrap"><section class="card"><div style="float:right">'+watti(100,'cheer','big')+'</div><div class="tag">Runde beendet</div><h2 class="sumh" style="margin:8px 0">'+(R.c>=R.n-1?'Stark.':R.c>=R.n/2?'Gut gemacht.':'Weiter üben lohnt sich.')+'</h2>'+
   '<p style="font-size:1.25rem;margin-bottom:12px"><span class="mono b">'+R.c+' von '+R.n+'</span> auf Anhieb richtig.</p>'+
-  '<p class="mono b" style="font-size:1.5rem;color:var(--accent-text)">+'+R.xp+' XP</p>'+teacherChip()+
+  '<p class="mono b" style="font-size:1.5rem;color:var(--accent-text)">+'+R.xp+' XP</p>'+teacherChip()+(ui.justUnlocked?'<div class="note"><div class="tag">Neu</div>Kapitel '+ui.justUnlocked+' ist jetzt freigeschaltet.</div>':'')+
   (R.missed.length?'<div class="note"><div class="tag">Das kommt wieder</div><ul>'+[...new Set(R.missed)].map(t=>'<li>'+t+'</li>').join('')+'</ul></div>':'')+
   '<p class="small" style="margin-top:12px">Stufe: '+lv[1]+'</p></section>'+
   '<button class="btn btn-primary block" data-act="practice">Noch eine Runde</button><button class="btn block" data-act="home">Zum Lernpfad</button></main>';
@@ -2785,7 +2969,8 @@ function viewDone(){
 function render(){
   stopAll();
   $('app').innerHTML=ui.screen==='home'?viewHome():ui.screen==='lesson'?viewLesson():ui.screen==='round'?viewRound():ui.screen==='summary'?viewSummary():viewDone();
-  const sr=$('sr'),mr=$('mr');
+  const sr=$('sr'),mr=$('mr'),kr=$('kwr');
+  if(kr)kr.addEventListener('input',()=>{ui.kw.min=+kr.value;kwUpdate();});
   if(mr)mr.addEventListener('input',()=>{ui.sp.m=+mr.value;$('mv').textContent=ui.sp.m;});
   if(sr)sr.addEventListener('input',()=>{ui.sp.st=+sr.value;$('sv').textContent=ui.sp.st;$('hv').textContent=fmt(ui.sp.st*0.18,2);});
   if(ui.screen==='round'&&ui.R.q.kind==='num'&&!ui.R.done){const a=$('ans');if(a)setTimeout(()=>a.focus(),30);}
@@ -2833,7 +3018,7 @@ function checkNum(){
 }
 function nextQ(){
   const R=ui.R;R.i++;
-  if(R.i>=R.n){bump(R.xp+(R.c>=R.n-1?10:0));S.rounds++;save();R.xp+=R.c>=R.n-1?10:0;ui.screen='summary';render();return;}
+  if(R.i>=R.n){bump(R.xp+(R.c>=R.n-1?10:0));S.rounds++;{const was=chDone(ui.k);CS().rounds++;ui.justUnlocked=(!was&&chDone(ui.k)&&CHS[ui.k].num<3)?CHS[ui.k].num+1:0;}save();R.xp+=R.c>=R.n-1?10:0;ui.screen='summary';render();return;}
   Object.assign(R,{q:nextQuestion(),done:false,tries:0,hint:false,input:'',fb:null,sel:null,usedHint:false,sayIds:null});
   save();render();
 }
@@ -2851,7 +3036,7 @@ function measure(t,m,st){
   const h=st*0.18,W=m*10*h;
   S.sprint={m,h,t:Math.max(1,t),W,P:W/Math.max(1,t)};
   ui.sp.t=S.sprint.t;
-  if(!S.seen[ui.ci])S.seen[ui.ci]=true;
+  CS().seen[ui.ci]=true;CS('k1').exp=true;
   bump(10);save();render();
 }
 function swStop(){
@@ -2865,7 +3050,7 @@ const b64u=u8=>{let s='';for(let i=0;i<u8.length;i++)s+=String.fromCharCode(u8[i
 function payload(){
   const last=S.log.slice(-30),acc=last.length?Math.round(last.reduce((a,b)=>a+b.ok,0)/last.length*100):null;
   const e={};Object.keys(S.errs||{}).sort((p,q)=>S.errs[q]-S.errs[p]).slice(0,3).forEach(k=>{e[k]=S.errs[k];});
-  const o={v:2,n:S.nick,x:S.xp,r:S.rounds,g:S.niv,a:acc,l:S.lesson?1:0,s:S.sprint?Math.round(S.sprint.P):null,i:Math.floor(Date.now()/1000)};
+  const o={v:2,n:S.nick,x:S.xp,r:S.rounds,g:[S.ad.k1.niv,S.ad.k2.niv,S.ad.k3.niv],a:acc,l:['k1','k2','k3'].filter(k=>S.chs[k].lesson).length,s:S.sprint?Math.round(S.sprint.P):null,i:Math.floor(Date.now()/1000)};
   if(Object.keys(e).length)o.e=e;
   return o;
 }
@@ -2888,25 +3073,29 @@ function qrSvg(text){const q=qrcode(0,'L');q.addData(text,'Byte');q.make();retur
 function onAct(b){
   const a=b.dataset.act,i=ui.ci;
   if(a==='home'){ui.screen='home';ui.code=null;ui.qr=null;render();}
-  else if(a==='learn'){ui.screen='lesson';ui.ci=0;S.seen[0]=S.seen[0]||false;render();}
-  else if(a==='lnext'){S.seen[ui.ci]=true;ui.ci=Math.min(CARDS.length-1,ui.ci+1);save();render();}
+  else if(a==='learn'){if(b.dataset.k)setCh(b.dataset.k);ui.screen='lesson';ui.ci=0;render();}
+  else if(a==='lnext'){CS().seen[ui.ci]=true;ui.ci=Math.min(CARDS.length-1,ui.ci+1);save();render();}
   else if(a==='lprev'){ui.ci=Math.max(0,ui.ci-1);render();}
-  else if(a==='lfinish'){S.seen[ui.ci]=true;ui.gain=0;if(!S.lesson){S.lesson=true;ui.gain=15;bump(15);}save();ui.screen='done';render();}
-  else if(a==='mode'){ui.mode[i]=b.dataset.m;render();}
+  else if(a==='lfinish'){CS().seen[ui.ci]=true;ui.gain=0;if(!CS().lesson){CS().lesson=true;ui.gain=15;bump(15);}save();ui.screen='done';render();}
+  else if(a==='mode'){ui.mode[K(i)]=b.dataset.m;render();}
   else if(a==='play'){
     if(b.dataset.on==='1'){stopAll();b.dataset.on='';b.textContent='▶ Abspielen';return;}
     b.dataset.on='1';b.textContent='■ Stopp';
-    const items=cardAudio(i,ui.mode[i]);
+    const items=cardAudio(i,ui.mode[K(i)]);
     playSeq(items).then(()=>{const e=$('plbtn');if(e){e.dataset.on='';e.textContent='▶ Nochmals';}});
   }
-  else if(a==='pred'){ui.pick[i]=+b.dataset.i;S.seen[i]=true;render();}
-  else if(a==='wstep'){ui.wk[i]=(ui.wk[i]||0)+1;render();}
+  else if(a==='pred'){ui.pick[K(i)]=+b.dataset.i;CS().seen[i]=true;render();}
+  else if(a==='wstep'){ui.wk[K(i)]=(ui.wk[K(i)]||0)+1;render();}
+  else if(a==='rk'){const r=ui.rk||(ui.rk=newRank()),x=+b.dataset.i;if(!r.done&&r.order.indexOf(x)<0){r.order.push(x);if(r.order.length===4){r.done=true;if(!CS().exp){CS().exp=true;bump(10);}CS().seen[i]=true;save();}}render();}
+  else if(a==='rkundo'){if(ui.rk&&!ui.rk.done)ui.rk.order.pop();render();}
+  else if(a==='rkagain'){ui.rk=newRank();render();}
+  else if(a==='kwdev'){ui.kw.dev=+b.dataset.i;render();}
   else if(a==='est'){ui.sp.est=+b.dataset.i;render();}
   else if(a==='swstart')swStart();
   else if(a==='swstop')swStop();
   else if(a==='example'){measure(8,60,22);}
-  else if(a==='spagain'){ui.sp.t=null;ui.sp.est=null;S.sprint=null;render();}
-  else if(a==='practice')startRound();
+  else if(a==='spagain'){ui.sp.t=null;ui.sp.est=null;S.sprint=null;CS('k1').exp=false;render();}
+  else if(a==='practice'){if(b.dataset.k)setCh(b.dataset.k);startRound();}
   else if(a==='qopt')answerMC(+b.dataset.i);
   else if(a==='qcheck')checkNum();
   else if(a==='hint'){const el=$('ans');if(el)ui.R.input=el.value;ui.R.hint=true;ui.R.usedHint=true;render();}
@@ -2920,7 +3109,7 @@ function onAct(b){
     const txt=JSON.stringify(out,null,1),msg=$('cpmsg');
     try{navigator.clipboard.writeText(txt).then(()=>{if(msg)msg.textContent=out.length+' Clips kopiert.';},()=>{if(msg)msg.textContent='Kopieren nicht möglich.';});}catch(e){if(msg)msg.textContent='Kopieren nicht möglich.';}
   }
-  else if(a==='reset'){if(ui.confirmReset){S=defaults();save();ui.confirmReset=false;ui.pick={};ui.wk={};ui.sp={est:null,m:60,st:22,run:false,t0:0,t:null};}else ui.confirmReset=true;render();}
+  else if(a==='reset'){if(ui.confirmReset){S=defaults();save();ui.confirmReset=false;ui.pick={};ui.wk={};ui.mode={};ui.rk=null;ui.kw={dev:2,min:30};setCh('k1');ui.sp={est:null,m:60,st:22,run:false,t0:0,t:null};}else ui.confirmReset=true;render();}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;onAct(b);});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='ans'){e.preventDefault();checkNum();}});

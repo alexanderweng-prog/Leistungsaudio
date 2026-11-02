@@ -1,26 +1,29 @@
-Leistung-App (Prototyp, Kapitel 1) - fertig fuer GitHub Pages
+Leistung-App - drei Kapitel, fertig fuer GitHub Pages
 
 Inhalt
-- leistung.html   Die App (QR-Bibliothek ist eingebaut, kein Internet noetig).
-- audio/          61 Sprachclips (37 Lernclips + 24 Hinweise bei Fehlern) (Watti = Tutor 9, Moderator = Tutor 6,
-                  Co-Moderatorin = Tutor 3). Dateinamen nicht aendern.
+- index.html   Die App (Kapitel 1 bis 3, QR-Bibliothek eingebaut).
+- audio/       133 Sprachclips (Watti = Tutor 9, Moderator = Tutor 6,
+               Co-Moderatorin = Tutor 3). Dateinamen nicht aendern.
 
 Hochladen
 1. ZIP entpacken.
 2. Im Repository "Add file" und "Upload files" waehlen.
-3. leistung.html und den Ordner audio/ hineinziehen (Ordner-Upload am Computer).
+3. index.html UND den ganzen Ordner audio/ hineinziehen. Die alten Dateien
+   werden ersetzt. Ordner-Upload am besten am Computer.
 4. "Commit changes". Nach ein bis zwei Minuten erreichbar unter
-   https://DEIN-NAME.github.io/DEIN-REPO/leistung.html
+   https://DEIN-NAME.github.io/DEIN-REPO/
+
+Kapitel
+1  Von der Arbeit zur Leistung   (Treppensprint)
+2  Leistung im Alltag            (Geraete ordnen)
+3  Energie und Wirkungsgrad      (Energie-Detektiv)
+Ein Kapitel wird frei, wenn das vorige gelernt und einmal geuebt wurde.
+
+Lehrer-Ansicht in der App: Adresse mit #lehrer am Ende. Sie zeigt das
+Niveau jedes Kapitels und schaltet alle Kapitel frei.
 
 Lernstand
-- Schueler tippen auf "QR-Code anzeigen". Der Code ist verschluesselt
-  (ECDH P-256 + AES-GCM). Nur die Lehrperson kann ihn mit der Datei
-  lehrer-NUR-LOKAL.html lesen. Diese Datei gehoert NICHT auf GitHub.
-
-Lehrer-Ansicht in der App: leistung.html#lehrer (zeigt das Niveau live)
-
-Gezielte Rueckmeldung
-- Bei Rechenaufgaben und bei Auswahlfragen erkennt die App typische Fehler (z. B. Gewichtskraft vergessen, Minuten nicht
-  in Sekunden, durch die falsche Grösse geteilt) und sagt Watti-Hinweise dazu.
-- Die haeufigsten Fehler eines Schuelers stehen verschluesselt im QR-Code und erscheinen
-  in der Lehrer-Auswertung.
+- Schueler tippen auf "QR-Code anzeigen". Der Code ist verschluesselt.
+  Nur die Lehrperson kann ihn mit lehrer-NUR-LOKAL.html lesen.
+  Diese Datei gehoert NICHT auf GitHub.
+- Bestehender Fortschritt von Kapitel 1 bleibt beim Update erhalten.
